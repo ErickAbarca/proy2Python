@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Search Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <h2>Search Page</h2>0
+    <form>
+        <label for="search">Search:</label>
+        <input type="text" id="search" name="search" required><br><br>
+        <input type="submit" value="Search">
+    </form>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const search = document.getElementById('search').value;
+
+            // Redirect to another page
+            window.location.href = 'search-results.html?search=' + search;
+        });
+    </script>
+</body>
+</html>

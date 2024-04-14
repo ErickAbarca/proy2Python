@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <h2>Login</h2>
+    <form>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <input type="submit" value="Login">
+    </form>
+
+    <script>
+        document.getElementById('formulario').addEventListener('submit', function(event) {
+    event.preventDefault(); // Evitar que el formulario se envíe de manera tradicional
+    
+    var nombreUsuario = document.getElementById('nombreUsuario').value;
+    var contraseña = document.getElementById('contraseña').value;
+
+    var datos = {
+        nombre_usuario: nombreUsuario,
+        contraseña: contraseña
+    };
+
+    fetch('/validar_usuario', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datos)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Manejar el resultado, por ejemplo, mostrar un mensaje en la página
+        alert('Resultado: ' + data.resultado);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
+    </script>
+</body>
+</html>
