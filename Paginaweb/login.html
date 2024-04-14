@@ -19,8 +19,8 @@
         document.getElementById('formulario').addEventListener('submit', function(event) {
     event.preventDefault(); // Evitar que el formulario se envíe de manera tradicional
     
-    var nombreUsuario = document.getElementById('nombreUsuario').value;
-    var contraseña = document.getElementById('contraseña').value;
+    var nombreUsuario = document.getElementById('username').value;
+    var contraseña = document.getElementById('password').value;
 
     var datos = {
         nombre_usuario: nombreUsuario,

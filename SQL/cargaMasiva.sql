@@ -34,7 +34,7 @@ BEGIN
         SELECT
             (SELECT id FROM puesto WHERE nombre = empleado.value('@Puesto', 'varchar(64)')) AS idPuesto,
             empleado.value('@ValorDocumentoIdentidad', 'nvarchar(20)') AS ValorDocumentoIdentidad,
-            empleado.value('@Nombre', 'nvarchar(64)') AS Nombre,
+            empleado.value('@Nombre', 'varchar(64)') AS Nombre,
             empleado.value('@FechaContratacion', 'date') AS FechaContratacion,
             0 AS SaldoVacaciones,
             1 AS EsActivo
@@ -42,21 +42,21 @@ BEGIN
 
         INSERT INTO usuario (id, username, password)
         SELECT
-            usuario.value('@Nombre', 'int') AS id,
-            usuario.value('@Username', 'nvarchar(64)') AS username,
-            usuario.value('@Password', 'nvarchar(64)') AS password
+            usuario.value('@Id', 'int') AS id,
+            usuario.value('@Nombre', 'varchar(64)') AS username,
+            usuario.value('@Pass', 'varchar(64)') AS password
         FROM @DatosXML.nodes('/Datos/Usuarios/usuario') AS Tbl(usuario);
 
         INSERT INTO movimiento (idEmpleado, idTipoMovimiento, fecha, monto, nuevoSaldo, idPostByUser, postInIp, postTime)
         SELECT
-            (SELECT id FROM empleado WHERE valorDocumento = movimiento.value('@ValorDocumentoIdentidad', 'nvarchar(20)')) AS idEmpleado,
-            movimiento.value('@IdTipoMovimiento', 'int') AS idTipoMovimiento,
+            (SELECT id FROM empleado WHERE valorDocumento = movimiento.value('@ValorDocId', 'int')) AS idEmpleado,
+            (SELECT id FROM tipoMovimiento WHERE nombre = movimiento.value('@IdTipoMovimiento', 'varchar(64)')) AS idTipoMovimiento,
             movimiento.value('@Fecha', 'datetime') AS fecha,
-            movimiento.value('@Monto', 'money') AS monto,
+            movimiento.value('@Monto', 'int') AS monto,
             0 AS nuevoSaldo,
-            movimiento.value('@IdPostByUser', 'int') AS idPostByUser,
-            movimiento.value('@PostInIp', 'nvarchar(15)') AS postInIp,
-            movimiento.value('@PostInDate', 'datetime') AS postInDate
+            (SELECT id FROM usuario WHERE username = movimiento.value('@PostByUser', 'varchar(64)')) AS idPostByUser,
+            movimiento.value('@PostInIP', 'varchar(64)') AS postInIp,
+            movimiento.value('@PostTime', 'datetime') AS postTime
         FROM @DatosXML.nodes('/Datos/Movimientos/movimiento') AS Tbl(movimiento);
 
         COMMIT TRANSACTION;

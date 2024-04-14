@@ -12,15 +12,31 @@
         <input type="text" id="search" name="search" required><br><br>
         <input type="submit" value="Search">
     </form>
+    <h1>Lista de Usuarios</h1>
+    <ul id="lista-usuarios"></ul>
+
 
     <script>
-        document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const search = document.getElementById('search').value;
-
-            // Redirect to another page
-            window.location.href = 'search-results.html?search=' + search;
-        });
+        // Hacer una solicitud GET al servidor Flask
+        fetch('http://127.0.0.1:5000/usuarios')
+            .then(response => response.json())  // Convertir la respuesta a JSON
+            .then(data => {
+                // Manipular los datos recibidos
+                const usuarios = data.usuarios;
+                const listaUsuarios = document.getElementById('lista-usuarios');
+                console.log(usuarios);
+                
+                // Iterar sobre los usuarios y agregarlos a la lista en la página web
+                usuarios.forEach(usuario => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `ID: ${usuario.id}, Nombre: ${usuario.nombre}, Email: ${usuario.email}`;
+                    listaUsuarios.appendChild(listItem);
+                });
+            })
+            .catch(error => {
+                // Manejar cualquier error que ocurra durante la solicitud
+                console.error('Error:', error);
+            });
     </script>
 </body>
 </html>
