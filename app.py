@@ -119,7 +119,7 @@ def obtener_empleados():
             'nombre': e[2],
             'fechaContratacion': e[3],
             'esActivo': e[4],
-            'id': e[5]
+            'saldoVacaciones': e[5]
         }
         empleados_json.append(empleado_json)
     return jsonify(empleados_json)

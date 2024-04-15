@@ -45,6 +45,9 @@
             margin-bottom: 16px;
             grid-column: 1;
         }
+        .filaSeleccion{
+            background-color: #ffffff;
+        }
         .boton {
             padding: 12px;
             border: 1px solid #ccc;
@@ -104,18 +107,23 @@
         font-size: 16px;
         }
 
-/* Estilos adicionales para los botones */
 .modificarOpcion {
-    background-color: #4CAF50; /* Verde */
+    background-color: #4CAF50; 
     color: white;
     border: none;
 }
 
 .eliminarOpcion {
-    background-color: #f44336; /* Rojo */
+    background-color: #f44336; 
     color: white;
     border: none;
 }
+.innerTitle {
+    color: #ffffff;
+    font-size: 24px;
+    justify-content: center;
+}
+
     </style>
 </head>
 <body>
@@ -136,8 +144,7 @@
         </div>
 
         <div class="container movimientoForm">
-            <h2>Ver Movimientos</h2>
-            <button id="movimientos", class="boton">Ver Movimientos</button>
+            <button class="boton", id="logout">Logout</button>
         </div>
         </header>
 
@@ -156,19 +163,40 @@
                 </tr>
             </thead>
             <tbody id="empleadoslista">
-                <!-- Aquí se cargarán dinámicamente los datos de los empleados -->
+                
             </tbody>
         </table>
     </div>
 
     <div class="opcionesDiv">
-        <button class="boton modificarOpcion">Modificar</button>
-        <button class="boton eliminarOpcion">Eliminar</button>
+        <h2 class="innerTitle">Opciones Empleado</h2>
+        <div class="scrollable-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Documento</th>
+                        <th>Fecha de Contratación</th>
+                        <th>Puesto</th>
+                        <th>Activo</th>
+                        <th>Saldo Vacaciones</th>
+                    </tr>
+                </thead>
+                <tbody id="seleccion">
+                    
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <button class="boton modificarOpcion", id="modificar">Modificar</button>
+        <button class="boton eliminarOpcion", id="eliminar">Eliminar</button>
+        <button class="boton", id="insMovimiento">Insertar Movimiento</button>
+        <button id="movimientos", class="boton">Ver Movimientos</button>
         <button class="boton" onclick="document.querySelector('.opcionesDiv').style.display = 'none';">Cerrar</button>
     </div>
 
 <script>
-    // Obtener la URL del archivo JSON
+    
     const url = 'http://127.0.0.1:5000/empleados';
   
     fetch(url)
@@ -246,8 +274,30 @@
             verBoton.classList.add('boton');
             verBoton.classList.add('verBoton');
             verBoton.addEventListener('click', function() {
-                divOpciones.style.display = 'flex';
-                
+                divOpciones.style.display = 'grid';
+                const seleccion = document.getElementById('seleccion');
+                seleccion.innerHTML = '';
+                const filaSeleccion = document.createElement('tr');
+                filaSeleccion.classList.add('filaSeleccion');
+                const nombreSeleccion = document.createElement('td');
+                nombreSeleccion.textContent = empleado.nombre;
+                filaSeleccion.appendChild(nombreSeleccion);
+                const documentoSeleccion = document.createElement('td');
+                documentoSeleccion.textContent = empleado.valorDocumento;
+                filaSeleccion.appendChild(documentoSeleccion);
+                const fechaSeleccion = document.createElement('td');
+                fechaSeleccion.textContent = new Date(empleado.fechaContratacion).toLocaleDateString();
+                filaSeleccion.appendChild(fechaSeleccion);
+                const puestoSeleccion = document.createElement('td');
+                puestoSeleccion.textContent = empleado.puesto;
+                filaSeleccion.appendChild(puestoSeleccion);
+                const activoSeleccion = document.createElement('td');
+                activoSeleccion.textContent = empleado.esActivo ? 'Sí' : 'No';
+                filaSeleccion.appendChild(activoSeleccion);
+                const saldoSeleccion = document.createElement('td');
+                saldoSeleccion.textContent = empleado.saldoVacaciones;
+                filaSeleccion.appendChild(saldoSeleccion);
+                seleccion.appendChild(filaSeleccion);
             });
 
                 accionesCelda.appendChild(verBoton);
