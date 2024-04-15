@@ -32,18 +32,18 @@ def ejecutar_stored_procedure(nombre_sp, parametros=None):
 
 @app.route('/usuarios', methods=['GET'])
 def obtener_usuarios():
+    usuarios = ejecutar_stored_procedure('ObtenerUsuarios')
+    usuarios_json = []
     
-    usuario = ejecutar_stored_procedure('ObtenerUsuarios')
-    
-    usuarios = []
-    for u in usuario:
-        usuariox = {
+    for u in usuarios:
+        usuario_json = {
             'id': u[0],
             'nombre_usuario': u[1],
             'contraseña': u[2],
         }
-        usuarios.append(usuariox)
-    return json.dumps(usuarios)
+        usuarios_json.append(usuario_json)
+    
+    return jsonify(usuarios_json)
 
 
 @app.route('/validar', methods=['GET'])
@@ -55,19 +55,33 @@ def validar_credenciales():
     resultado = ejecutar_stored_procedure('ValidarCredenciales', f"'{username}', '{password}'")
 
     if resultado[0][0] == 'Usuario válido':
+        print('Usuario válido')
         return redirect(url_for('pagina_exitosa'))
     else:
         return redirect(url_for('pagina_error'))
+    
 
 @app.route('/exitoso', methods=['GET'])
 def pagina_exitosa():
-    # Redireccionar a la página exitosa.html si las credenciales son válidas
-    return redirect('/index..html')
+    return redirect('\..\Paginaweb\index.html')
 
 @app.route('/error', methods=['GET'])
 def pagina_error():
-    # Redireccionar a la página error.html si las credenciales son inválidas
     return redirect('/error.html')
+
+@app.route('/insertar', methods=['POST'])
+def insertar_empleado():
+    idPuesto = 1
+    ValorDocumentoIdentidad = 1111
+    nombre = "Nombre"
+    FechaContratacion = "2021-01-01"
+    SaldoVacaiones = 0
+    EsActivo = 1
+
+    ejecutar_stored_procedure('InsertarEmpleado', f"{idPuesto}, {ValorDocumentoIdentidad}, '{nombre}', '{FechaContratacion}', {SaldoVacaiones}, {EsActivo}")
+    return jsonify({'mensaje': 'Empleado insertado correctamente'})
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

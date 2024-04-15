@@ -1,49 +1,57 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulario de inicio de sesión</title>
 </head>
 <body>
-    <h2>Login</h2>
-    <form>
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
-        <input type="submit" value="Login">
-    </form>
 
-    <script>
-        document.getElementById('formulario').addEventListener('submit', function(event) {
-    event.preventDefault(); // Evitar que el formulario se envíe de manera tradicional
-    
-    var nombreUsuario = document.getElementById('username').value;
-    var contraseña = document.getElementById('password').value;
+<h2>Iniciar sesión</h2>
 
-    var datos = {
-        nombre_usuario: nombreUsuario,
-        contraseña: contraseña
-    };
+<form id="login-form">
+  <div>
+    <label for="username">Nombre de usuario:</label>
+    <input type="text" id="username" name="username" required>
+  </div>
+  <div>
+    <label for="password">Contraseña:</label>
+    <input type="password" id="password" name="password" required>
+  </div>
+  <button type="submit">Iniciar sesión</button>
+</form>
 
-    fetch('/validar_usuario', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(datos)
+<script>
+document.getElementById('login-form').addEventListener('submit', function(event) {
+  event.preventDefault(); // Evitar el comportamiento predeterminado del formulario
+  
+  const formData = new FormData(this); // Obtener los datos del formulario
+  
+  // Construir la URL con los datos del formulario
+  const url = `http://127.0.0.1:5000/validar?username=${formData.get('username')}&password=${formData.get('password')}`;
+  
+  // Hacer una solicitud GET a la URL
+  fetch(url)
+    .then(response => {
+      // Manejar la respuesta del servidor
+      if (response.redirected) {
+        // Si el servidor redirige, manejar la redirección
+        window.location.href = response.url; // Redirigir a la URL proporcionada por el servidor
+      } else {
+        // Si no hay redirección, manejar la respuesta según corresponda
+        return response.json(); // Convertir la respuesta a JSON si es necesario
+      }
     })
-    .then(response => response.json())
     .then(data => {
-        // Manejar el resultado, por ejemplo, mostrar un mensaje en la página
-        alert('Resultado: ' + data.resultado);
+      // Manejar los datos de la respuesta si es necesario
+      console.log(data);
     })
     .catch(error => {
-        console.error('Error:', error);
+      // Manejar errores
+      console.error('Error:', error);
     });
 });
+</script>
 
-    </script>
 </body>
 </html>

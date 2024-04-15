@@ -1,3 +1,4 @@
+--SP de prueba para obtener todos los usuarios y probar la coenxión
 ALTER PROCEDURE ObtenerUsuarios
 AS
 BEGIN
@@ -7,7 +8,7 @@ END
 
 GO
 
--- SP para obtener un usuario por id
+
 CREATE PROCEDURE ObtenerUsuarioPorId
     @nombre_usuario VARCHAR(50),
     @password VARCHAR(50)
@@ -18,7 +19,7 @@ BEGIN
 END
 
 GO
--- Procedimiento almacenado para validar las credenciales de inicio de sesión
+
 CREATE PROCEDURE ValidarCredenciales
     @username VARCHAR(64),
     @password VARCHAR(64)
@@ -33,11 +34,12 @@ BEGIN
     ELSE
     BEGIN
         SELECT 'Usuario inválido' AS Estado;
+        
     END
 END
 GO
 
--- Procedimiento almacenado para insertar un nuevo empleado en la base de datos
+
 CREATE PROCEDURE InsertarEmpleado
     @IdPuesto VARCHAR(50),
     @ValorDocumentoIdentidad NVARCHAR(50),
@@ -52,4 +54,6 @@ BEGIN
     INSERT INTO empleado (IdPuesto, ValorDocumentoIdentidad, Nombre, FechaContratacion, SaldoVacaciones, EsActivo)
     VALUES (@IdPuesto, @ValorDocumentoIdentidad, @Nombre, @FechaContratacion, @SaldoVacaciones, @EsActivo);
 END
+
+GO
 

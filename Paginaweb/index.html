@@ -12,31 +12,38 @@
         <input type="text" id="search" name="search" required><br><br>
         <input type="submit" value="Search">
     </form>
-    <h1>Lista de Usuarios</h1>
-    <ul id="lista-usuarios"></ul>
+    <h2>Lista de Usuarios</h2>
+<ul id="lista-usuarios"></ul>
 
-
-    <script>
-        // Hacer una solicitud GET al servidor Flask
-        fetch('http://127.0.0.1:5000/usuarios')
-            .then(response => response.json())  // Convertir la respuesta a JSON
-            .then(data => {
-                // Manipular los datos recibidos
-                const usuarios = data.usuarios;
-                const listaUsuarios = document.getElementById('lista-usuarios');
-                console.log(usuarios);
-                
-                // Iterar sobre los usuarios y agregarlos a la lista en la página web
-                usuarios.forEach(usuario => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = `ID: ${usuario.id}, Nombre: ${usuario.nombre}, Email: ${usuario.email}`;
-                    listaUsuarios.appendChild(listItem);
-                });
-            })
-            .catch(error => {
-                // Manejar cualquier error que ocurra durante la solicitud
-                console.error('Error:', error);
-            });
-    </script>
+<script>
+    // Obtener la URL del archivo JSON
+    const url = 'http://127.0.0.1:5000/usuarios';
+  
+    // Hacer una solicitud HTTP GET para obtener el archivo JSON
+    fetch(url)
+      .then(response => {
+        // Verificar si la respuesta es exitosa
+        if (!response.ok) {
+          throw new Error('Error al obtener el archivo JSON');
+        }
+        // Convertir la respuesta a formato JSON
+        return response.json();
+      })
+      .then(data => {
+        // Procesar los datos obtenidos
+        const listaUsuarios = document.getElementById('lista-usuarios');
+        data.forEach(usuario => {
+          // Crear un nuevo elemento de lista para cada usuario
+          const itemUsuario = document.createElement('li');
+          itemUsuario.textContent = `ID: ${usuario.id}, Nombre de usuario: ${usuario.nombre_usuario}, Contraseña: ${usuario.contraseña}`;
+          // Agregar el elemento de lista a la lista de usuarios
+          listaUsuarios.appendChild(itemUsuario);
+        });
+      })
+      .catch(error => {
+        // Manejar errores
+        console.error('Error:', error);
+      });
+  </script>  
 </body>
 </html>
