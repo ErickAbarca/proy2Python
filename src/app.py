@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, redirect, request, url_for
+from flask import Flask, jsonify, redirect, request, send_file, url_for
 from flask_cors import CORS
 import pyodbc
 import json
@@ -56,20 +56,21 @@ def validar_credenciales():
 
     if resultado[0][0] == 'Usuario válido':
         print('Usuario válido')
-        return redirect(url_for('pagina_exitosa'))
+        # Enviar la URL de redirección como parte de la respuesta
+        return redirect(url_for('pagina_principal'))
     else:
         return redirect(url_for('pagina_error'))
+
+@app.route('/pagina_principal')
+def pagina_principal():
+    # Especifica la ruta completa del archivo HTML
+    archivo_html = '..\\Paginaweb\\index.html'
     
+    # Envía el archivo HTML como respuesta
+    return send_file(archivo_html)
 
-@app.route('/exitoso', methods=['GET'])
-def pagina_exitosa():
-    return redirect('\..\Paginaweb\index.html')
 
-@app.route('/error', methods=['GET'])
-def pagina_error():
-    return redirect('/error.html')
-
-@app.route('/insertar', methods=['POST'])
+#@app.route('/insertar', methods=['POST'])
 def insertar_empleado():
     idPuesto = 1
     ValorDocumentoIdentidad = 1111

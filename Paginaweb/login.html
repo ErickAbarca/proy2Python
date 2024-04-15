@@ -22,36 +22,33 @@
 </form>
 
 <script>
-document.getElementById('login-form').addEventListener('submit', function(event) {
-  event.preventDefault(); // Evitar el comportamiento predeterminado del formulario
-  
-  const formData = new FormData(this); // Obtener los datos del formulario
-  
-  // Construir la URL con los datos del formulario
-  const url = `http://127.0.0.1:5000/validar?username=${formData.get('username')}&password=${formData.get('password')}`;
-  
-  // Hacer una solicitud GET a la URL
-  fetch(url)
-    .then(response => {
-      // Manejar la respuesta del servidor
-      if (response.redirected) {
-        // Si el servidor redirige, manejar la redirección
-        window.location.href = response.url; // Redirigir a la URL proporcionada por el servidor
-      } else {
-        // Si no hay redirección, manejar la respuesta según corresponda
-        return response.json(); // Convertir la respuesta a JSON si es necesario
-      }
-    })
-    .then(data => {
-      // Manejar los datos de la respuesta si es necesario
-      console.log(data);
-    })
-    .catch(error => {
-      // Manejar errores
-      console.error('Error:', error);
+    document.getElementById('login-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      const formData = new FormData(this);
+      
+
+      const url = `http://127.0.0.1:5000/validar?username=${formData.get('username')}&password=${formData.get('password')}`;
+      
+      fetch(url)
+        .then(response => {
+          if (response.redirected) {
+
+            window.location.href = response.url;
+          } else {
+            return response.json(); 
+          }
+        })
+        .then(data => {
+
+          console.log(data);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
     });
-});
-</script>
+    </script>
+    
 
 </body>
 </html>
