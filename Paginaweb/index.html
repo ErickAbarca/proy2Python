@@ -2,22 +2,127 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>Search Page</title>
+    <title>Gestor de Planillas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /*acomodar de manera que search este a la izquiera y crear en el centro y movimiento a la derecha utilizando grid*/
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        .scrollable-table {
+            max-height: 60%;
+            overflow-y: auto;
+        }
+        .input {
+            width: 75%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            margin-bottom: 16px;
+            grid-column: 1;
+        }
+        .boton {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            margin-bottom: 16px;
+        }
+        .verBoton {
+            padding: 5px;
+            margin: 5px;
+        }
+        #crear {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            margin-bottom: 16px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-gap: 10px;
+        }
+        .container {
+            padding: 20px;
+            text-align: center;
+            background-color: #f2f2f2;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Search Page</h2>0
-    <form>
-        <label for="search">Search:</label>
-        <input type="text" id="search" name="search" required><br><br>
-        <input type="submit" value="Search">
-    </form>
-    <h2>Lista de Usuarios</h2>
-<ul id="lista-usuarios"></ul>
+    <header class="grid-container">
+        <div class="container searchForm">
+            <h2>Gestor de Planilla</h2>
+            <form>
+                <label for="search">Filtar:</label>
+                <input type="text" id="search" name="search" required, class="input", placeholder="Ingrese un número o un nombre"><br><br>
+                <input type="submit" value="Buscar", class="boton">
+            </form>
+        </div>
+
+        <div class="container crearForm">
+            <h2>Crear Empleado</h2>
+            <button id="crear", class="boton">Crear Empleado</button>
+        </div>
+
+        <div class="container movimientoForm">
+            <h2>Ver Movimientos</h2>
+            <button id="movimientos", class="boton">Ver Movimientos</button>
+        </div>
+        </header>
+
+    <h2>Lista de Empleados</h2>
+
+    <div class="scrollable-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Documento</th>
+                    <th>Fecha de Contratación</th>
+                    <th>Puesto</th>
+                    <th>Activo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="empleadoslista">
+                <!-- Aquí se cargarán dinámicamente los datos de los empleados -->
+            </tbody>
+        </table>
+    </div>
 
 <script>
     // Obtener la URL del archivo JSON
-    const url = 'http://127.0.0.1:5000/usuarios';
+    const url = 'http://127.0.0.1:5000/empleados';
   
     // Hacer una solicitud HTTP GET para obtener el archivo JSON
     fetch(url)
@@ -26,24 +131,110 @@
         if (!response.ok) {
           throw new Error('Error al obtener el archivo JSON');
         }
-        // Convertir la respuesta a formato JSON
+
         return response.json();
       })
       .then(data => {
-        // Procesar los datos obtenidos
-        const listaUsuarios = document.getElementById('lista-usuarios');
-        data.forEach(usuario => {
-          // Crear un nuevo elemento de lista para cada usuario
-          const itemUsuario = document.createElement('li');
-          itemUsuario.textContent = `ID: ${usuario.id}, Nombre de usuario: ${usuario.nombre_usuario}, Contraseña: ${usuario.contraseña}`;
-          // Agregar el elemento de lista a la lista de usuarios
-          listaUsuarios.appendChild(itemUsuario);
-        });
+        function cargarEmpleados() {
+        const empleadosLista = document.getElementById('empleadoslista');
+        empleadosLista.innerHTML = ''; // Limpiar la tabla antes de cargar los datos
+        
+            data.forEach(empleado => {
+            const fila = document.createElement('tr');
+
+            const nombreCelda = document.createElement('td');
+            nombreCelda.textContent = empleado.nombre;
+            fila.appendChild(nombreCelda);
+
+            const documentoCelda = document.createElement('td');
+            documentoCelda.textContent = empleado.valorDocumento;
+            fila.appendChild(documentoCelda);
+
+            const fechaCelda = document.createElement('td');
+            fechaCelda.textContent = new Date(empleado.fechaContratacion).toLocaleDateString();
+            fila.appendChild(fechaCelda);
+
+            const puestoCelda = document.createElement('td');
+            puestoCelda.textContent = empleado.puesto;
+            fila.appendChild(puestoCelda);
+
+            const activoCelda = document.createElement('td');
+            activoCelda.textContent = empleado.esActivo ? 'Sí' : 'No';
+            fila.appendChild(activoCelda);
+
+            const accionesCelda = document.createElement('td');
+            const verBoton = document.createElement('button');
+            verBoton.textContent = 'Ver';
+            verBoton.classList.add('boton');
+            verBoton.classList.add('verBoton');
+            accionesCelda.appendChild(verBoton);
+            // Añadir eventos para los botones de Ver, Modificar y Eliminar (opcional)
+
+            fila.appendChild(accionesCelda);
+
+            empleadosLista.appendChild(fila);
+          
+            });
+        }
+        cargarEmpleados();
       })
       .catch(error => {
         // Manejar errores
         console.error('Error:', error);
       });
+
+
+    // Filtrar empleados
+
+    const formulario = document.querySelector('form');
+    formulario.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(formulario);
+        const busqueda = formData.get('search');
+        const urlBusqueda = `http://127.0.0.1:5000/empleados/filtro?search=${busqueda}`;
+        function cargarEmpleados() {
+            const empleadosLista = document.getElementById('empleadoslista');
+            empleadosLista.innerHTML = ''; // Limpiar la tabla antes de cargar los datos
+            fetch(urlBusqueda)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al obtener el archivo JSON');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(empleado => {
+                        const fila = document.createElement('tr');
+                        const nombreCelda = document.createElement('td');
+                        nombreCelda.textContent = empleado.nombre;
+                        fila.appendChild(nombreCelda);
+                        const documentoCelda = document.createElement('td');
+                        documentoCelda.textContent = empleado.valorDocumento;
+                        fila.appendChild(documentoCelda);
+                        const fechaCelda = document.createElement('td');
+                        fechaCelda.textContent = new Date(empleado.fechaContratacion).toLocaleDateString();
+                        fila.appendChild(fechaCelda);
+                        const puestoCelda = document.createElement('td');
+                        puestoCelda.textContent = empleado.puesto;
+                        fila.appendChild(puestoCelda);
+                        const activoCelda = document.createElement('td');
+                        activoCelda.textContent = empleado.esActivo ? 'Sí' : 'No';
+                        fila.appendChild(activoCelda);
+                        const accionesCelda = document.createElement('td');
+                        const verBoton = document.createElement('button');
+                        verBoton.textContent = 'Ver';
+                        accionesCelda.appendChild(verBoton);
+                        fila.appendChild(accionesCelda);
+                        empleadosLista.appendChild(fila);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+        cargarEmpleados();
+    });
   </script>  
+
 </body>
 </html>

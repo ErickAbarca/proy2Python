@@ -7,14 +7,13 @@ app = Flask(__name__)
 CORS(app)
 
 def ejecutar_stored_procedure(nombre_sp, parametros=None):
-    
+    # Configuración de la conexión a la base de datos
     server = 'ERICKPC'
     database = 'prog2'
     username = 'hola'
     password = '12345678'
     conn_str = f'DRIVER=ODBC Driver 17 for SQL Server;SERVER={server};DATABASE={database};UID={username};PWD={password}'
 
-    
     conn = pyodbc.connect(conn_str)
     cursor = conn.cursor()
 
@@ -23,9 +22,12 @@ def ejecutar_stored_procedure(nombre_sp, parametros=None):
             cursor.execute(f"EXEC {nombre_sp} {parametros}")
         else:
             cursor.execute(f"EXEC {nombre_sp}")
-        
-        resultado = cursor.fetchall()
-        return resultado
+
+        if cursor.description:
+            resultado = cursor.fetchall()
+            return resultado
+        else:
+            return None
     finally:
         cursor.close()
         conn.close()
@@ -70,17 +72,64 @@ def pagina_principal():
     return send_file(archivo_html)
 
 
-#@app.route('/insertar', methods=['POST'])
+@app.route('/insertar', methods=['POST'])
 def insertar_empleado():
-    idPuesto = 1
-    ValorDocumentoIdentidad = 1111
-    nombre = "Nombre"
-    FechaContratacion = "2021-01-01"
-    SaldoVacaiones = 0
-    EsActivo = 1
+    archivo_html = '\\insertaremp.html'
+    return send_file(archivo_html)
+    if request.method == 'POST':
+        
+        datos = request.json
+        
+        id_puesto = datos.get('id_puesto')
+        valor_documento_identidad = datos.get('valor_documento_identidad')
+        nombre = datos.get('nombre')
+        fecha_contratacion = datos.get('fecha_contratacion')
+        saldo_vacaciones = datos.get('saldo_vacaciones')
+        es_activo = datos.get('es_activo')
+        
+        exito = ejecutar_stored_procedure('InsertarEmpleado', f"{id_puesto}, '{valor_documento_identidad}', '{nombre}', '{fecha_contratacion}', {saldo_vacaciones}, {es_activo}")
 
-    ejecutar_stored_procedure('InsertarEmpleado', f"{idPuesto}, {ValorDocumentoIdentidad}, '{nombre}', '{FechaContratacion}', {SaldoVacaiones}, {EsActivo}")
-    return jsonify({'mensaje': 'Empleado insertado correctamente'})
+        if exito:
+            return jsonify({'mensaje': 'Empleado insertado correctamente'}), 200
+        else:
+            return jsonify({'mensaje': 'Error al insertar empleado'}), 500
+
+
+@app.route('/empleados', methods=['GET'])
+def obtener_empleados():
+    empleados = ejecutar_stored_procedure('GetEmpleados')
+    empleados_json = []
+    for e in empleados:
+        empleado_json = {
+            'puesto': ejecutar_stored_procedure('GetPuestoId', f"{e[0]}")[0][1],
+            'valorDocumento': e[1],
+            'nombre': e[2],
+            'fechaContratacion': e[3],
+            'esActivo': e[4]
+        }
+        empleados_json.append(empleado_json)
+    return jsonify(empleados_json)
+
+@app.route('/empleados/filtro', methods=['GET'])
+def filtro_doc():
+    bus = request.args.get('search')
+    if bus.isdigit():
+        empleados = ejecutar_stored_procedure('GetFiltroEmpleadosDoc', f"{bus}")
+        empleados_json = []
+    else:
+        empleados = ejecutar_stored_procedure('GetFiltroEmpleadosNombre', f"'{bus}'")
+        empleados_json = []
+    for e in empleados:
+        empleado_json = {
+            'puesto': ejecutar_stored_procedure('GetPuestoId', f"{e[0]}")[0][1],
+            'valorDocumento': e[1],
+            'nombre': e[2],
+            'fechaContratacion': e[3],
+            'esActivo': e[4]
+        }
+        empleados_json.append(empleado_json)
+    return jsonify(empleados_json)
+    
 
 
 
