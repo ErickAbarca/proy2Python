@@ -53,9 +53,13 @@
             margin-top: 6px;
             margin-bottom: 16px;
         }
+        .enlace {
+            text-decoration: none;
+            color: black;
+        }
         .verBoton {
             padding: 5px;
-            margin: 5px;
+            margin: 2px;
         }
         #crear {
             padding: 12px;
@@ -76,6 +80,11 @@
             background-color: #f2f2f2;
             border-radius: 4px;
         }
+        .boton:hover {
+            background-color: #0f140f;
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -90,8 +99,9 @@
         </div>
 
         <div class="container crearForm">
+            <h2 id="bienvenida">Bienvenido {{username}}</h2>
             <h2>Crear Empleado</h2>
-            <button id="crear", class="boton">Crear Empleado</button>
+            <a href="/insertaremp", class="boton enlace">Empleado</a>
         </div>
 
         <div class="container movimientoForm">
@@ -124,10 +134,8 @@
     // Obtener la URL del archivo JSON
     const url = 'http://127.0.0.1:5000/empleados';
   
-    // Hacer una solicitud HTTP GET para obtener el archivo JSON
     fetch(url)
       .then(response => {
-        // Verificar si la respuesta es exitosa
         if (!response.ok) {
           throw new Error('Error al obtener el archivo JSON');
         }
@@ -137,11 +145,11 @@
       .then(data => {
         function cargarEmpleados() {
         const empleadosLista = document.getElementById('empleadoslista');
-        empleadosLista.innerHTML = ''; // Limpiar la tabla antes de cargar los datos
-        
+        empleadosLista.innerHTML = ''; 
+            
             data.forEach(empleado => {
             const fila = document.createElement('tr');
-
+            
             const nombreCelda = document.createElement('td');
             nombreCelda.textContent = empleado.nombre;
             fila.appendChild(nombreCelda);
@@ -168,7 +176,6 @@
             verBoton.classList.add('boton');
             verBoton.classList.add('verBoton');
             accionesCelda.appendChild(verBoton);
-            // Añadir eventos para los botones de Ver, Modificar y Eliminar (opcional)
 
             fila.appendChild(accionesCelda);
 
@@ -179,13 +186,10 @@
         cargarEmpleados();
       })
       .catch(error => {
-        // Manejar errores
         console.error('Error:', error);
       });
 
-
-    // Filtrar empleados
-
+      //filtrar empleados
     const formulario = document.querySelector('form');
     formulario.addEventListener('submit', function(event) {
         event.preventDefault();
@@ -223,6 +227,8 @@
                         const accionesCelda = document.createElement('td');
                         const verBoton = document.createElement('button');
                         verBoton.textContent = 'Ver';
+                        verBoton.classList.add('boton');
+                        verBoton.classList.add('verBoton');
                         accionesCelda.appendChild(verBoton);
                         fila.appendChild(accionesCelda);
                         empleadosLista.appendChild(fila);
@@ -234,7 +240,11 @@
         }
         cargarEmpleados();
     });
+    const username= document.getElementById('bienvenida').textContent.split(' ')[1];
+
   </script>  
+
+
 
 </body>
 </html>

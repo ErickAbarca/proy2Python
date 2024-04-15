@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, redirect, request, send_file, url_for
+from flask import Flask, jsonify, redirect, render_template, request, url_for, session
 from flask_cors import CORS
 import pyodbc
 import json
@@ -57,37 +57,32 @@ def validar_credenciales():
     resultado = ejecutar_stored_procedure('ValidarCredenciales', f"'{username}', '{password}'")
 
     if resultado[0][0] == 'Usuario válido':
-        print('Usuario válido')
-        # Enviar la URL de redirección como parte de la respuesta
-        return redirect(url_for('pagina_principal'))
+        return redirect(url_for('pagina_principal', username=username))
     else:
         return redirect(url_for('pagina_error'))
 
-@app.route('/pagina_principal')
-def pagina_principal():
-    # Especifica la ruta completa del archivo HTML
-    archivo_html = '..\\Paginaweb\\index.html'
-    
-    # Envía el archivo HTML como respuesta
-    return send_file(archivo_html)
+@app.route('/pagina_principal/<username>')
+def pagina_principal(username):
+    return render_template('index.html', username=username)
 
 
-@app.route('/insertar', methods=['POST'])
+@app.route('/insertaremp')
+def abrir_insertar_empleado():
+    return render_template('insertaremp.html')
+
+@app.route('/insertaremp/insertar', methods=['POST'])
 def insertar_empleado():
-    archivo_html = '\\insertaremp.html'
-    return send_file(archivo_html)
     if request.method == 'POST':
         
         datos = request.json
+        IdPuesto = int(datos.get('idPuesto'))
+        ValorDocumento = datos.get('valorDocumento')
+        Nombre = datos.get('nombre')
+        FechaContratacion = datos.get('fechaContratacion')
+        SaldoVacaciones = int(datos.get('saldoVacaciones'))
+        EsActivo = int(datos.get('esActivo'))
         
-        id_puesto = datos.get('id_puesto')
-        valor_documento_identidad = datos.get('valor_documento_identidad')
-        nombre = datos.get('nombre')
-        fecha_contratacion = datos.get('fecha_contratacion')
-        saldo_vacaciones = datos.get('saldo_vacaciones')
-        es_activo = datos.get('es_activo')
-        
-        exito = ejecutar_stored_procedure('InsertarEmpleado', f"{id_puesto}, '{valor_documento_identidad}', '{nombre}', '{fecha_contratacion}', {saldo_vacaciones}, {es_activo}")
+        exito = ejecutar_stored_procedure('InsertarEmpleado', f"{IdPuesto}, '{ValorDocumento}', '{Nombre}', '{FechaContratacion}', {SaldoVacaciones}, {EsActivo}")
 
         if exito:
             return jsonify({'mensaje': 'Empleado insertado correctamente'}), 200
@@ -105,7 +100,8 @@ def obtener_empleados():
             'valorDocumento': e[1],
             'nombre': e[2],
             'fechaContratacion': e[3],
-            'esActivo': e[4]
+            'esActivo': e[4],
+            'id': e[5]
         }
         empleados_json.append(empleado_json)
     return jsonify(empleados_json)
@@ -125,7 +121,8 @@ def filtro_doc():
             'valorDocumento': e[1],
             'nombre': e[2],
             'fechaContratacion': e[3],
-            'esActivo': e[4]
+            'esActivo': e[4],
+            'id': e[5]
         }
         empleados_json.append(empleado_json)
     return jsonify(empleados_json)

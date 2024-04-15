@@ -44,6 +44,7 @@ ALTER PROCEDURE InsertarEmpleado
     @FechaContratacion DATE,
     @SaldoVacaciones INT,
     @EsActivo BIT
+
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -59,6 +60,8 @@ BEGIN
     BEGIN CATCH
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
+
+        
         THROW;
     END CATCH;
 END
@@ -68,7 +71,7 @@ ALTER PROCEDURE GetEmpleados
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT idPuesto, valorDocumento, nombre, fechaContratacion, esActivo 
+    SELECT idPuesto, valorDocumento, nombre, fechaContratacion, esActivo, id 
     FROM empleado
     ORDER BY nombre ASC;
 END
@@ -91,7 +94,7 @@ ALTER PROCEDURE GetFiltroEmpleadosDoc
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT idPuesto, valorDocumento, nombre, fechaContratacion, esActivo 
+    SELECT idPuesto, valorDocumento, nombre, fechaContratacion, esActivo, id 
     FROM empleado
     WHERE CAST(valorDocumento AS VARCHAR(20)) LIKE '%' + CAST(@valorDocumento AS VARCHAR(20)) + '%'
     ORDER BY nombre ASC;
@@ -104,10 +107,9 @@ ALTER PROCEDURE GetFiltroEmpleadosNombre
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT idPuesto, valorDocumento, nombre, fechaContratacion, esActivo 
+    SELECT idPuesto, valorDocumento, nombre, fechaContratacion, esActivo, id
     FROM empleado
     WHERE nombre LIKE '%' + @nombre + '%'
     ORDER BY nombre ASC;
 END
 GO
-

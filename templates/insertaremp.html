@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Empleado</title>
+</head>
+<body>
+    <h1>Insertar Empleado</h1>
+    <form id="formulario-empleado">
+        <label for="idPuesto">ID Puesto:</label>
+        <input type="text" id="idPuesto" name="idPuesto"><br><br>
+
+        <label for="valorDocumento">Valor Documento:</label>
+        <input type="text" id="valorDocumento" name="valorDocumento"><br><br>
+
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre"><br><br>
+
+        <label for="fechaContratacion">Fecha Contratación:</label>
+        <input type="date" id="fechaContratacion" name="fechaContratacion"><br><br>
+
+        <label for="saldoVacaciones">Saldo Vacaciones:</label>
+        <input type="number" id="saldoVacaciones" name="saldoVacaciones"><br><br>
+
+        <label for="esActivo">¿Es Activo?</label>
+        <input type="checkbox" id="esActivo" name="esActivo" value="1"><br><br>
+
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script>
+        document.getElementById('formulario-empleado').addEventListener('submit', function(event) {
+            event.preventDefault(); // Evitar el envío del formulario por defecto
+
+            // Obtener datos del formulario
+            const formData = new FormData(this);
+
+            // Enviar datos al servidor
+            fetch('/insertaremp/insertar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Error al enviar los datos al servidor.');
+                }
+            })
+            .then(data => {
+                alert(data.mensaje); // Mostrar mensaje de éxito o error
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
