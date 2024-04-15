@@ -18,6 +18,16 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE ObtenerIdPorNombre
+    @nombre_usuario VARCHAR(64)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id FROM usuario WHERE username = @nombre_usuario;
+END
+GO
+
+
 CREATE PROCEDURE ValidarCredenciales
     @username VARCHAR(64),
     @password VARCHAR(64)
@@ -38,34 +48,45 @@ END
 GO
 
 ALTER PROCEDURE InsertarEmpleado
-    @IdPuesto int,
-    @ValorDocumentoIdentidad VARCHAR(64),
-    @Nombre VARCHAR(64),
-    @FechaContratacion DATE,
-    @SaldoVacaciones INT,
-    @EsActivo BIT
-
+    @idPuesto INT,
+    @valorDocumento VARCHAR(64),
+    @nombre VARCHAR(64),
+    @fechaContratacion DATE,
+    @saldoVacaciones INT,
+    @esActivo BIT
 AS
 BEGIN
-    SET NOCOUNT ON;
-
+    DECLARE @rollback BIT = 0;
+    BEGIN TRANSACTION;
     BEGIN TRY
-        BEGIN TRANSACTION;
-        
-        INSERT INTO empleado (idPuesto, valorDocumento, nombre, fechaContratacion, saldoVacaciones, esActivo)
-        VALUES (@IdPuesto, @ValorDocumentoIdentidad, @Nombre, @FechaContratacion, @SaldoVacaciones, @EsActivo);
+        INSERT INTO [dbo].[empleado] ([idPuesto], [valorDocumento], [nombre], [fechaContratacion], [saldoVacaciones], [esActivo])
+        VALUES (@idPuesto, @valorDocumento, @nombre, @fechaContratacion, @saldoVacaciones, @esActivo);
         
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
+        SET @rollback = 1;
+        DECLARE @error_message NVARCHAR(2048) = ERROR_MESSAGE();
+        DECLARE @error_number INT = ERROR_NUMBER();
+        DECLARE @error_state INT = ERROR_STATE();
+        DECLARE @error_severity INT = ERROR_SEVERITY();
+        DECLARE @error_line INT = ERROR_LINE();
+        DECLARE @error_procedure NVARCHAR(128) = ERROR_PROCEDURE();
+        DECLARE @current_datetime DATETIME = GETDATE();
 
-        
-        THROW;
-    END CATCH;
+        INSERT INTO [dbo].[dbError] ([idPostByUser], [number], [state], [severity], [line], [procedi], [message], [datetime])
+        VALUES (NULL, @error_number, @error_state, @error_severity, @error_line, @error_procedure, @error_message, @current_datetime);
+
+        IF @rollback = 1
+            ROLLBACK TRANSACTION;
+    END CATCH
+
+    IF @rollback = 0
+        COMMIT TRANSACTION;
 END
 GO
+
+
 
 ALTER PROCEDURE GetEmpleados
 AS
@@ -87,7 +108,13 @@ BEGIN
 END
 GO
 
-
+CREATE PROCEDURE GetPuestos
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id, nombre, salarioHora  FROM puesto;
+END
+GO
 
 ALTER PROCEDURE GetFiltroEmpleadosDoc
     @valorDocumento int

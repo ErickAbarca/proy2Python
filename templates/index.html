@@ -5,7 +5,7 @@
     <title>Gestor de Planillas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        /*acomodar de manera que search este a la izquiera y crear en el centro y movimiento a la derecha utilizando grid*/
+        
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -32,7 +32,7 @@
             background-color: #ddd;
         }
         .scrollable-table {
-            max-height: 60%;
+            max-height: 400px;
             overflow-y: auto;
         }
         .input {
@@ -85,6 +85,37 @@
             color: white;
             cursor: pointer;
         }
+        .opcionesDiv {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        }
+
+        .opcionesDiv button {
+        margin: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        }
+
+/* Estilos adicionales para los botones */
+.modificarOpcion {
+    background-color: #4CAF50; /* Verde */
+    color: white;
+    border: none;
+}
+
+.eliminarOpcion {
+    background-color: #f44336; /* Rojo */
+    color: white;
+    border: none;
+}
     </style>
 </head>
 <body>
@@ -101,7 +132,7 @@
         <div class="container crearForm">
             <h2 id="bienvenida">Bienvenido {{username}}</h2>
             <h2>Crear Empleado</h2>
-            <a href="/insertaremp", class="boton enlace">Empleado</a>
+            <a href="/insertaremp?username={{username}}", class="boton enlace">Empleado</a>
         </div>
 
         <div class="container movimientoForm">
@@ -130,6 +161,12 @@
         </table>
     </div>
 
+    <div class="opcionesDiv">
+        <button class="boton modificarOpcion">Modificar</button>
+        <button class="boton eliminarOpcion">Eliminar</button>
+        <button class="boton" onclick="document.querySelector('.opcionesDiv').style.display = 'none';">Cerrar</button>
+    </div>
+
 <script>
     // Obtener la URL del archivo JSON
     const url = 'http://127.0.0.1:5000/empleados';
@@ -143,7 +180,39 @@
         return response.json();
       })
       .then(data => {
-        function cargarEmpleados() {
+        cargarEmpleados(data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+
+    
+      //filtrar empleados
+    const formulario = document.querySelector('form');
+    formulario.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(formulario);
+        const busqueda = formData.get('search');
+        const urlBusqueda = `http://127.0.0.1:5000/empleados/filtro?search=${busqueda}`;
+        fetch(urlBusqueda)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener el archivo JSON');
+                }
+                return response.json();
+            })
+            .then(data => {
+                cargarEmpleados(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    });
+    const username= document.getElementById('bienvenida').textContent.split(' ')[1];
+
+    //funcion para cargar empleados en la tabla
+
+    function cargarEmpleados(data) {
         const empleadosLista = document.getElementById('empleadoslista');
         empleadosLista.innerHTML = ''; 
             
@@ -172,75 +241,23 @@
 
             const accionesCelda = document.createElement('td');
             const verBoton = document.createElement('button');
+            const divOpciones = document.querySelector('.opcionesDiv');
             verBoton.textContent = 'Ver';
             verBoton.classList.add('boton');
             verBoton.classList.add('verBoton');
-            accionesCelda.appendChild(verBoton);
+            verBoton.addEventListener('click', function() {
+                divOpciones.style.display = 'flex';
+                
+            });
 
-            fila.appendChild(accionesCelda);
+                accionesCelda.appendChild(verBoton);
 
-            empleadosLista.appendChild(fila);
+                fila.appendChild(accionesCelda);
+
+                empleadosLista.appendChild(fila);
           
             });
         }
-        cargarEmpleados();
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
-
-      //filtrar empleados
-    const formulario = document.querySelector('form');
-    formulario.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const formData = new FormData(formulario);
-        const busqueda = formData.get('search');
-        const urlBusqueda = `http://127.0.0.1:5000/empleados/filtro?search=${busqueda}`;
-        function cargarEmpleados() {
-            const empleadosLista = document.getElementById('empleadoslista');
-            empleadosLista.innerHTML = ''; // Limpiar la tabla antes de cargar los datos
-            fetch(urlBusqueda)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error al obtener el archivo JSON');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    data.forEach(empleado => {
-                        const fila = document.createElement('tr');
-                        const nombreCelda = document.createElement('td');
-                        nombreCelda.textContent = empleado.nombre;
-                        fila.appendChild(nombreCelda);
-                        const documentoCelda = document.createElement('td');
-                        documentoCelda.textContent = empleado.valorDocumento;
-                        fila.appendChild(documentoCelda);
-                        const fechaCelda = document.createElement('td');
-                        fechaCelda.textContent = new Date(empleado.fechaContratacion).toLocaleDateString();
-                        fila.appendChild(fechaCelda);
-                        const puestoCelda = document.createElement('td');
-                        puestoCelda.textContent = empleado.puesto;
-                        fila.appendChild(puestoCelda);
-                        const activoCelda = document.createElement('td');
-                        activoCelda.textContent = empleado.esActivo ? 'Sí' : 'No';
-                        fila.appendChild(activoCelda);
-                        const accionesCelda = document.createElement('td');
-                        const verBoton = document.createElement('button');
-                        verBoton.textContent = 'Ver';
-                        verBoton.classList.add('boton');
-                        verBoton.classList.add('verBoton');
-                        accionesCelda.appendChild(verBoton);
-                        fila.appendChild(accionesCelda);
-                        empleadosLista.appendChild(fila);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-        cargarEmpleados();
-    });
-    const username= document.getElementById('bienvenida').textContent.split(' ')[1];
 
   </script>  
 

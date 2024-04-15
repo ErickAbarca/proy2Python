@@ -47,6 +47,20 @@ def obtener_usuarios():
     
     return jsonify(usuarios_json)
 
+@app.route('/GetPuestos', methods=['GET'])
+def obtener_puestos():
+    puestos = ejecutar_stored_procedure('GetPuestos')
+    puestos_json = []
+    
+    for p in puestos:
+        puesto_json = {
+            'id': p[0],
+            'nombre': p[1],
+        }
+        puestos_json.append(puesto_json)
+    
+    return jsonify(puestos_json)
+
 
 @app.route('/validar', methods=['GET'])
 def validar_credenciales():
@@ -66,28 +80,32 @@ def pagina_principal(username):
     return render_template('index.html', username=username)
 
 
-@app.route('/insertaremp')
+@app.route('/insertaremp', methods=['GET'])
 def abrir_insertar_empleado():
-    return render_template('insertaremp.html')
+    username = request.args.get('username')
+    return render_template('insertaremp.html', username=username)
 
-@app.route('/insertaremp/insertar', methods=['POST'])
+
+
+@app.route('/insertaremp', methods=['POST'])
 def insertar_empleado():
     if request.method == 'POST':
-        
-        datos = request.json
-        IdPuesto = int(datos.get('idPuesto'))
-        ValorDocumento = datos.get('valorDocumento')
-        Nombre = datos.get('nombre')
-        FechaContratacion = datos.get('fechaContratacion')
-        SaldoVacaciones = int(datos.get('saldoVacaciones'))
-        EsActivo = int(datos.get('esActivo'))
-        
-        exito = ejecutar_stored_procedure('InsertarEmpleado', f"{IdPuesto}, '{ValorDocumento}', '{Nombre}', '{FechaContratacion}', {SaldoVacaciones}, {EsActivo}")
+        try:
+            # Obtener los datos del formulario
+            idPuesto = request.form['idPuesto']
+            valorDocumento = request.form['valorDocumento']
+            nombre = request.form['nombre']
+            fechaContratacion = request.form['fechaContratacion']
+            saldoVacaciones = request.form['saldoVacaciones']
+            esActivo = request.form.get('esActivo', 0)
 
-        if exito:
-            return jsonify({'mensaje': 'Empleado insertado correctamente'}), 200
-        else:
-            return jsonify({'mensaje': 'Error al insertar empleado'}), 500
+            parametros = f"{idPuesto}, '{valorDocumento}', '{nombre}', '{fechaContratacion}', {saldoVacaciones}, {esActivo}"
+            ejecutar_stored_procedure("InsertarEmpleado", parametros)
+
+            return jsonify({'message': 'Datos ingresados correctamente'})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
 
 
 @app.route('/empleados', methods=['GET'])
@@ -105,6 +123,7 @@ def obtener_empleados():
         }
         empleados_json.append(empleado_json)
     return jsonify(empleados_json)
+
 
 @app.route('/empleados/filtro', methods=['GET'])
 def filtro_doc():
