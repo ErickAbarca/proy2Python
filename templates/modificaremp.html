@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Empleado</title>
+</head>
+<body>
+    <h2 id="usuario">Usuario {{username}}</h2>
+    <h2 id="informacion">Modificar Empleado, Documento: {{documento}}</h2>
+    <form id="formulario-empleado" method="post", action="/insertaremp">
+        <label for="Puesto">Puesto:</label>
+        <select id="Puesto" name="idPuesto"></select><br><br>
+        
+        <label for="valorDocumento">Valor Documento Identidad: {{documento}}</label><br><br>
+
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre"><br><br>
+
+        <label for="fechaContratacion">Fecha Contratación:</label>
+        <input type="date" id="fechaContratacion" name="fechaContratacion"><br><br>
+
+        <label for="saldoVacaciones" id="saldoVacaciones">Saldo Vacaciones: </label><br><br>
+
+        <label for="esActivo">¿Es Activo?</label>
+        <input type="checkbox" id="esActivo" name="esActivo" value="1"><br><br>
+
+        <button type="submit">Modificar</button>
+    </form>
+    <div id="mensaje"></div>
+    <a href="/pagina_principal/{{username}}", class="boton">Regresar</a>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+
+    const selectPuesto = document.getElementById('Puesto');
+    function cargarPuestos() {
+    fetch('/GetPuestos')
+        .then(response => response.json())
+        .then(data => {
+            selectPuesto.innerHTML = '';
+            data.forEach(puesto => {
+                const option = document.createElement('option');
+                option.value = puesto.id;
+                option.textContent = puesto.nombre;
+                selectPuesto.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error al obtener puestos:', error));
+    }
+
+    function obtenerDatos() {
+        const busqueda = document.getElementById('informacion').textContent.split(' ')[3];
+        const urlBusqueda = `http://127.0.0.1:5000/empleados/filtro?search=${busqueda}`;
+        fetch(urlBusqueda)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                document.getElementById('Puesto').value = data[0].idPuesto;
+                document.getElementById('nombre').value = data[0].nombre;
+                document.getElementById('fechaContratacion').value = data[0].fechaContratacion;
+                document.getElementById('saldoVacaciones').textContent = 'Saldo Vacaciones: '+data[0].saldoVacaciones;
+                document.getElementById('esActivo').checked = data[0].esActivo;
+            })
+            .catch(error => console.error('Error al obtener datos:', error));
+            
+    }
+    cargarPuestos();
+    obtenerDatos();
+
+    const formulario = document.getElementById('formulario-empleado');
+    
+
+</script>
+
+    
+</body>
+</html>

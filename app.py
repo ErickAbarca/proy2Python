@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, redirect, render_template, request, url_for, session
 from flask_cors import CORS
 import pyodbc
-import json
 
 app = Flask(__name__)
 CORS(app)
@@ -73,7 +72,7 @@ def validar_credenciales():
     if resultado[0][0] == 'Usuario válido':
         return redirect(url_for('pagina_principal', username=username))
     else:
-        return redirect(url_for('pagina_error'))
+        return jsonify({'error': 'Usuario inválido'}), 401
 
 @app.route('/pagina_principal/<username>')
 def pagina_principal(username):
@@ -84,6 +83,10 @@ def pagina_principal(username):
 def abrir_insertar_empleado():
     username = request.args.get('username')
     return render_template('insertaremp.html', username=username)
+
+@app.route('/logout')
+def logout():
+    return render_template('login.html')
 
 
 
@@ -98,11 +101,43 @@ def insertar_empleado():
             fechaContratacion = request.form['fechaContratacion']
             saldoVacaciones = request.form['saldoVacaciones']
             esActivo = request.form.get('esActivo', 0)
+            username = request.form['idPostByUser']
+            idPostByUser = ejecutar_stored_procedure('ObtenerIdPorNombre', f"'{username}'")[0][0]
+            inIp = request.remote_addr
 
-            parametros = f"{idPuesto}, '{valorDocumento}', '{nombre}', '{fechaContratacion}', {saldoVacaciones}, {esActivo}"
+
+            parametros = f"{idPuesto}, '{valorDocumento}', '{nombre}', '{fechaContratacion}', {saldoVacaciones}, {esActivo}, {idPostByUser}, '{inIp}'"
             ejecutar_stored_procedure("InsertarEmpleado", parametros)
 
             return jsonify({'message': 'Datos ingresados correctamente'})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+#funcion para modificar empleado por documento
+@app.route('/modificaremp', methods=['GET'])
+def abrir_modificar_empleado():
+    username = request.args.get('username')
+    documento = request.args.get('documento')
+    return render_template('modificaremp.html', username=username, documento=documento)
+
+@app.route('/modificaremp', methods=['POST'])
+def modificar_empleado():
+    if request.method == 'POST':
+        try:
+            # Obtener los datos del formulario
+            valorDocumento = request.form['valorDocumento']
+            nombre = request.form['nombre']
+            fechaContratacion = request.form['fechaContratacion']
+            saldoVacaciones = request.form['saldoVacaciones']
+            esActivo = request.form.get('esActivo', 0)
+            username = request.form['idPostByUser']
+            idPostByUser = ejecutar_stored_procedure('ObtenerIdPorNombre', f"'{username}'")[0][0]
+            inIp = request.remote_addr
+
+            parametros = f"'{valorDocumento}', '{nombre}', '{fechaContratacion}', {saldoVacaciones}, {esActivo}, {idPostByUser}, '{inIp}'"
+            ejecutar_stored_procedure("ModificarEmpleado", parametros)
+
+            return jsonify({'message': 'Datos modificados correctamente'})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
@@ -139,11 +174,14 @@ def filtro_doc():
             'puesto': ejecutar_stored_procedure('GetPuestoId', f"{e[0]}")[0][1],
             'valorDocumento': e[1],
             'nombre': e[2],
-            'fechaContratacion': e[3],
+            'fechaContratacion': str(e[3]),
             'esActivo': e[4],
-            'id': e[5]
+            'saldoVacaciones': e[5],
+            'id': e[6],
+            'idPuesto': str(e[0])
         }
         empleados_json.append(empleado_json)
+        print(empleados_json)
     return jsonify(empleados_json)
     
 

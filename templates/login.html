@@ -4,6 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formulario de inicio de sesión</title>
+<style>
+  #mensaje {
+    position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+  }
+</style>
 </head>
 <body>
 
@@ -19,6 +33,12 @@
     <input type="password" id="password" name="password" required>
   </div>
   <button type="submit">Iniciar sesión</button>
+
+  <div id="mensaje">
+    <h2>Error</h2>
+    <p>Usuario o contraseña incorrectos</p>
+    <button type="button" id="cerrar">Cerrar</button>
+  </div> 
 </form>
 
 <script>
@@ -32,6 +52,7 @@
             console.log('Redirecting to', response.url);
             window.location.href = response.url;
           } else {
+            document.getElementById('mensaje').style.display = 'block';
             return response.json(); 
           }
         })
@@ -42,6 +63,10 @@
           console.error('Error:', error);
         });
     });
+    document.getElementById('cerrar').addEventListener('click', function() {
+      location.reload();
+    });
+
     </script>
     
 

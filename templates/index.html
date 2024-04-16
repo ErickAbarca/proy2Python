@@ -136,15 +136,13 @@
                 <input type="submit" value="Buscar", class="boton">
             </form>
         </div>
-
         <div class="container crearForm">
             <h2 id="bienvenida">Bienvenido {{username}}</h2>
             <h2>Crear Empleado</h2>
-            <a href="/insertaremp?username={{username}}", class="boton enlace">Empleado</a>
+            <a href="/insertaremp?username={{username}}", class="boton enlace">Crear Empleado</a>
         </div>
-
         <div class="container movimientoForm">
-            <button class="boton", id="logout">Logout</button>
+            <a href="/logout" class="boton enlace">Logout</a>
         </div>
         </header>
 
@@ -308,6 +306,17 @@
           
             });
         }
+    document.getElementById('modificar').addEventListener('click', function() {
+        const seleccion = document.getElementById('seleccion');
+        const documento = seleccion.querySelector('td:nth-child(2)').textContent;
+        console.log(documento);
+        window.location.href = `/modificaremp?documento=${documento}&username=${username}`;
+    });
+    document.getElementById('movimientos').addEventListener('click', function() {
+        const seleccion = document.getElementById('seleccion');
+        const documento = seleccion.querySelector('td:nth-child(2)').textContent;
+        window.location.href = `/movimientos?documento=${documento}&username=${username}`;
+    });
 
   </script>  
 

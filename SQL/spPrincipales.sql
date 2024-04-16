@@ -53,7 +53,12 @@ ALTER PROCEDURE InsertarEmpleado
     @nombre VARCHAR(64),
     @fechaContratacion DATE,
     @saldoVacaciones INT,
-    @esActivo BIT
+    @esActivo BIT,
+    @idPostByUser INT,
+    @inIp VARCHAR(64)
+
+
+    
 AS
 BEGIN
     DECLARE @rollback BIT = 0;
@@ -140,3 +145,10 @@ BEGIN
     ORDER BY nombre ASC;
 END
 GO
+
+CREATE PROCEDURE ListarMovimientos
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT * FROM movimiento;
+END

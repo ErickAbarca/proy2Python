@@ -52,14 +52,16 @@
 
     window.addEventListener('load', cargarPuestos);
 
-
+    const username= document.getElementById('usuario').textContent.split(' ')[1];
 
     $(document).ready(function() {
         $('#formulario-empleado').submit(function(event) {
             event.preventDefault();
 
             var formData = $(this).serialize();
+            formData += '&idPostByUser=' + username;
             console.log(formData);
+
 
             $.post('/insertaremp', formData, function(response) {
                 $('#mensaje').text(response.message);
