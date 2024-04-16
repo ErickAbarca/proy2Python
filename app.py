@@ -79,16 +79,15 @@ def pagina_principal(username):
     return render_template('index.html', username=username)
 
 
-@app.route('/insertaremp', methods=['GET'])
-def abrir_insertar_empleado():
-    username = request.args.get('username')
-    return render_template('insertaremp.html', username=username)
 
 @app.route('/logout')
 def logout():
     return render_template('login.html')
 
-
+@app.route('/insertaremp', methods=['GET'])
+def abrir_insertar_empleado():
+    username = request.args.get('username')
+    return render_template('insertaremp.html', username=username)
 
 @app.route('/insertaremp', methods=['POST'])
 def insertar_empleado():
@@ -113,7 +112,6 @@ def insertar_empleado():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
-#funcion para modificar empleado por documento
 @app.route('/modificaremp', methods=['GET'])
 def abrir_modificar_empleado():
     username = request.args.get('username')
@@ -124,6 +122,7 @@ def abrir_modificar_empleado():
 def modificar_empleado():
     if request.method == 'POST':
         try:
+            print(request.form['esActivo'])
             # Obtener los datos del formulario
             valorDocumento = request.form['valorDocumento']
             nombre = request.form['nombre']
@@ -135,7 +134,7 @@ def modificar_empleado():
             inIp = request.remote_addr
 
             parametros = f"'{valorDocumento}', '{nombre}', '{fechaContratacion}', {saldoVacaciones}, {esActivo}, {idPostByUser}, '{inIp}'"
-            ejecutar_stored_procedure("ModificarEmpleado", parametros)
+            ejecutar_stored_procedure("ModificarEmpleadoX", parametros)
 
             return jsonify({'message': 'Datos modificados correctamente'})
         except Exception as e:
@@ -184,8 +183,31 @@ def filtro_doc():
         print(empleados_json)
     return jsonify(empleados_json)
     
+        
+@app.route('/movimientoemp', methods=['GET'])
+def abrir_movimiento_empleado():
+    username = request.args.get('username')
+    documento = request.args.get('documento')
+    return render_template('movimientos.html', username=username, documento=documento)
 
 
+@app.route('/movimientos', methods=['GET'])
+def obtener_movimientos():
+    movimientos = ejecutar_stored_procedure('GetMovimientosById')
+    movimientos_json = []
+    for m in movimientos:
+        movimiento_json = {
+            'idEmpleado': m[0],
+            'idTipoMovimiento': m[1],
+            'fecha': str(m[2]),
+            'monto': m[3],
+            'nuevoSaldo': m[4],
+            'idPostByUser': m[5],
+            'PostInIP': m[6],
+            'PostTime': str(m[7])
+        }
+        movimientos_json.append(movimiento_json)
+    return jsonify(movimientos_json)
 
 if __name__ == '__main__':
     app.run(debug=True)

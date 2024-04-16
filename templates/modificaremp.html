@@ -8,7 +8,7 @@
 <body>
     <h2 id="usuario">Usuario {{username}}</h2>
     <h2 id="informacion">Modificar Empleado, Documento: {{documento}}</h2>
-    <form id="formulario-empleado" method="post", action="/insertaremp">
+    <form id="formulario-empleado" method="post", action="/modificaremp">
         <label for="Puesto">Puesto:</label>
         <select id="Puesto" name="idPuesto"></select><br><br>
         
@@ -48,26 +48,60 @@
         .catch(error => console.error('Error al obtener puestos:', error));
     }
 
-    function obtenerDatos() {
-        const busqueda = document.getElementById('informacion').textContent.split(' ')[3];
-        const urlBusqueda = `http://127.0.0.1:5000/empleados/filtro?search=${busqueda}`;
-        fetch(urlBusqueda)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                document.getElementById('Puesto').value = data[0].idPuesto;
-                document.getElementById('nombre').value = data[0].nombre;
-                document.getElementById('fechaContratacion').value = data[0].fechaContratacion;
-                document.getElementById('saldoVacaciones').textContent = 'Saldo Vacaciones: '+data[0].saldoVacaciones;
-                document.getElementById('esActivo').checked = data[0].esActivo;
-            })
-            .catch(error => console.error('Error al obtener datos:', error));
-            
-    }
+    function obtenerDatos(datos) {
+        document.getElementById('Puesto').value = datos[0].idPuesto;
+        document.getElementById('nombre').value = datos[0].nombre;
+        document.getElementById('fechaContratacion').value = datos[0].fechaContratacion;
+        document.getElementById('saldoVacaciones').textContent = 'Saldo Vacaciones: '+datos[0].saldoVacaciones;
+        document.getElementById('esActivo').checked = datos[0].esActivo;
+
+    }  
+
+    function busquedaFunc() {
+    const busqueda = document.getElementById('informacion').textContent.split(' ')[3];
+    const urlBusqueda = `http://127.0.0.1:5000/empleados/filtro?search=${busqueda}`;
+    return fetch(urlBusqueda)
+        .then(response => response.json())
+        .then(data => {
+            return data;
+        })
+        .catch(error => {
+            console.error('Error al obtener datos:', error);
+            return null;
+        });
+}   
     cargarPuestos();
-    obtenerDatos();
+    busquedaFunc().then(datos => {
+        obtenerDatos(datos);
+    });
+
+
 
     const formulario = document.getElementById('formulario-empleado');
+    const username= document.getElementById('usuario').textContent.split(' ')[1];
+    $(document).ready(function() {
+        $('#formulario-empleado').submit(function(event) {
+            event.preventDefault();
+
+            var formData = $(this).serialize();
+            formData += '&idPostByUser=' + username;
+            if (document.getElementById('esActivo').checked) {
+                formData += '&esActivo=1';
+            } else {
+                formData += '&esActivo=0';
+            }
+            
+            
+            console.log(formData);
+
+
+            $.post('/modificaremp', formData, function(response) {
+                $('#mensaje').text(response.message);
+            }).fail(function(xhr, status, error) {
+                $('#mensaje').text('Error: ' + error);
+            });
+        });
+    });
     
 
 </script>
