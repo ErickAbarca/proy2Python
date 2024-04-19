@@ -122,20 +122,19 @@ def abrir_modificar_empleado():
 def modificar_empleado():
     if request.method == 'POST':
         try:
-            print(request.form['esActivo'])
             # Obtener los datos del formulario
             valorDocumento = request.form['valorDocumento']
+            idPuesto = request.form['idPuesto']
             nombre = request.form['nombre']
             fechaContratacion = request.form['fechaContratacion']
-            saldoVacaciones = request.form['saldoVacaciones']
-            esActivo = request.form.get('esActivo', 0)
+            saldoVacaciones = int(request.form['saldoVacaciones'])
+            esActivo = int(request.form.get('esActivo', 0))
             username = request.form['idPostByUser']
             idPostByUser = ejecutar_stored_procedure('ObtenerIdPorNombre', f"'{username}'")[0][0]
             inIp = request.remote_addr
-
-            parametros = f"'{valorDocumento}', '{nombre}', '{fechaContratacion}', {saldoVacaciones}, {esActivo}, {idPostByUser}, '{inIp}'"
-            ejecutar_stored_procedure("ModificarEmpleadoX", parametros)
-
+            parametros = f"{idPuesto}, '{valorDocumento}', '{nombre}', '{fechaContratacion}', {saldoVacaciones}, {esActivo}, {idPostByUser}, '{inIp}'"
+            print(parametros)
+            ejecutar_stored_procedure("ModificarEmpleado", parametros) 
             return jsonify({'message': 'Datos modificados correctamente'})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
@@ -208,6 +207,9 @@ def obtener_movimientos():
         }
         movimientos_json.append(movimiento_json)
     return jsonify(movimientos_json)
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -85,11 +85,11 @@
 
             var formData = $(this).serialize();
             formData += '&idPostByUser=' + username;
-            if (document.getElementById('esActivo').checked) {
-                formData += '&esActivo=1';
-            } else {
-                formData += '&esActivo=0';
+            if (!document.getElementById('esActivo').checked) {
+                formData += '&esActivo=0';;
             }
+            formData += '&valorDocumento=' + document.getElementById('informacion').textContent.split(' ')[3];
+            formData += '&saldoVacaciones=' + document.getElementById('saldoVacaciones').textContent.split(' ')[2];
             
             
             console.log(formData);

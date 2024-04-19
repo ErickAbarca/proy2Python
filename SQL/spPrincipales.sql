@@ -202,3 +202,39 @@ BEGIN
         COMMIT TRANSACTION;
 END
 GO
+
+CREATE PROCEDURE ElimiEmpleado
+    @valorDocumento VARCHAR(64)
+AS
+BEGIN
+    DECLARE @rollback BIT = 0;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        IF EXISTS (SELECT 1 FROM [dbo].[empleado] WHERE [valorDocumento] = @valorDocumento)
+        BEGIN
+            DELETE FROM [dbo].[empleado]
+            WHERE [valorDocumento] = @valorDocumento;
+        END
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        SET @rollback = 1;
+        DECLARE @error_message NVARCHAR(2048) = ERROR_MESSAGE();
+        DECLARE @error_number INT = ERROR_NUMBER();
+        DECLARE @error_state INT = ERROR_STATE();
+        DECLARE @error_severity INT = ERROR_SEVERITY();
+        DECLARE @error_line INT = ERROR_LINE();
+        DECLARE @error_procedure NVARCHAR(128) = ERROR_PROCEDURE();
+        DECLARE @current_datetime DATETIME = GETDATE();
+
+        INSERT INTO [dbo].[dbError] ([idPostByUser], [number], [state], [severity], [line], [procedi], [message], [datetime])
+        VALUES (NULL, @error_number, @error_state, @error_severity, @error_line, @error_procedure, @error_message, @current_datetime);
+
+        IF @rollback = 1
+            ROLLBACK TRANSACTION;
+    END CATCH
+
+    IF @rollback = 0
+        COMMIT TRANSACTION;
+END
+GO
