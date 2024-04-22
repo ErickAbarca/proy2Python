@@ -1,9 +1,9 @@
-from flask import Flask, jsonify, redirect, render_template, request, url_for, session
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_cors import CORS
 import pyodbc
 
 app = Flask(__name__)
-CORS(app)
+CORS(app) 
 
 def ejecutar_stored_procedure(nombre_sp, parametros=None):
     # Configuración de la conexión a la base de datos
@@ -23,8 +23,8 @@ def ejecutar_stored_procedure(nombre_sp, parametros=None):
             cursor.execute(f"EXEC {nombre_sp}")
 
         if cursor.description:
-            resultado = cursor.fetchall()
-            return resultado
+            resultados = cursor.fetchall()
+            return resultados
         else:
             return None
     finally:
@@ -138,6 +138,21 @@ def modificar_empleado():
             return jsonify({'message': 'Datos modificados correctamente'})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+        
+@app.route('/eliminaremp', methods=['POST'])
+def eliminar_empleado():
+    try:
+        username = request.args.get('username')
+        documento = request.args.get('documento')
+        user = ejecutar_stored_procedure('ObtenerIdPorNombre', f"'{username}'")[0][0]
+        inIp = request.remote_addr
+        ejecutar_stored_procedure('ElimiEmpleado', f"'{documento}', '{user}', '{inIp}'")
+        
+        return jsonify({'message': 'Empleado eliminado correctamente'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 
 
 
@@ -179,7 +194,6 @@ def filtro_doc():
             'idPuesto': str(e[0])
         }
         empleados_json.append(empleado_json)
-        print(empleados_json)
     return jsonify(empleados_json)
     
         
@@ -189,26 +203,30 @@ def abrir_movimiento_empleado():
     documento = request.args.get('documento')
     return render_template('movimientos.html', username=username, documento=documento)
 
-
 @app.route('/movimientos', methods=['GET'])
-def obtener_movimientos():
-    movimientos = ejecutar_stored_procedure('GetMovimientosById')
-    movimientos_json = []
-    for m in movimientos:
-        movimiento_json = {
-            'idEmpleado': m[0],
-            'idTipoMovimiento': m[1],
-            'fecha': str(m[2]),
-            'monto': m[3],
-            'nuevoSaldo': m[4],
-            'idPostByUser': m[5],
-            'PostInIP': m[6],
-            'PostTime': str(m[7])
-        }
-        movimientos_json.append(movimiento_json)
-    return jsonify(movimientos_json)
-
-
+def ver_movimientos_empleado():
+    if request.method == 'GET':
+        try:
+            valorDocumento = request.args.get('documento')
+            movimientos_empleado = ejecutar_stored_procedure('GetMovimientosById', valorDocumento)
+            movimientos_json = []
+            for m in movimientos_empleado:
+                movimiento_json = {
+                    'idEmpleado': m[0],
+                    'fecha': m[1],
+                    'tipo': m[2],
+                    'monto': m[3],
+                    'nuevoSaldo': m[4],
+                    'idPostbyUser': m[5],
+                    'postInIp': m[6],
+                    'postTime': m[7]
+                }
+                print(movimiento_json)
+                movimientos_json.append(movimiento_json)
+            print(movimientos_json)
+            return render_template('movimientos.html', movimientos=movimientos_json)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

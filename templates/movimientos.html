@@ -8,7 +8,77 @@
 <body>
     <h2 id="usuario">Usuario {{username}}</h2>
     <h2 id="informacion">Lista de Movimientos de, Documento: {{documento}}</h2>
+    <form id="formulario-movimiento" action="/movimientos/{{documento}}" method="post">
+        <div class="scrollable-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tipo Movimiento</th>
+                        <th>Valor Documento</th>
+                        <th>Fecha del movimiento</th>
+                        <th>Monto</th>
+                        <th>Nuevo Saldo</th>
+                        <th>Post by User</th>
+                        <th>Post in IP</th>
+                        <th>Post Time</th>
+                    </tr>
+                </thead>
+                <tbody id="movimientosLista">
+                    
+                </tbody>
+            </table>
+        </div>
+    </form>
+    <script>
+        const url = 'http://127.0.0.1:5000/movimientos?documento={{documento}}';
+        fetch(url)
+            .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener el archivo JSON');
+            }
+
+            return response.json();
+            })
+            .then(data => {
+                cargarMovimientos(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        function cargarMovimientos(data) {
+        const movimientosLista = document.getElementById('movimientosLista');
+        movimientosLista.innerHTML = ''; 
+            
+            data.forEach(movimiento => {
+                const fila = document.createElement('tr');
+                const tipoMovimiento = document.createElement('td');
+                tipoMovimiento.textContent = movimiento.idTipoMovimiento;
+                fila.appendChild(tipoMovimiento);
+                const valorDocumento = document.createElement('td');
+                valorDocumento.textContent = movimiento.valorDocumento;
+                fila.appendChild(valorDocumento);
+                const fechaMovimiento = document.createElement('td');
+                fechaMovimiento.textContent = new Date(movimiento.fecha).toLocaleDateString();
+                fila.appendChild(fechaMovimiento);
+                const monto = document.createElement('td');
+                monto.textContent = movimiento.monto;
+                fila.appendChild(monto);
+                const nuevoSaldo = document.createElement('td');
+                nuevoSaldo.textContent = movimiento.nuevoSaldo;
+                fila.appendChild(nuevoSaldo);
+                const idPostByUser = document.createElement('td');
+                idPostByUser.textContent = movimiento.idPostByUser;
+                fila.appendChild(idPostByUser);
+                const postInIP = document.createElement('td');
+                postInIP.textContent = movimiento.postInIP;
+                fila.appendChild(postInIP);
+                const postTime = document.createElement('td');
+                postTime.textContent = new Date(movimiento.postTime).toLocaleString();
+                fila.appendChild(postTime);
+                movimientosLista.appendChild(fila);
+            });
+        }
+    </script>
     <a href="/pagina_principal/{{username}}", class="boton">Regresar</a>
-    
 </body>
 </html>

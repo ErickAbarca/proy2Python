@@ -56,11 +56,11 @@ BEGIN
             IF EXISTS (SELECT 1 FROM [dbo].[empleado] WHERE [valorDocumento] = @valorDocumento)
             BEGIN
                 SET @outResultCode = 50006;
-            END;
+            END
             ELSE
             BEGIN
                 SET @outResultCode = 50005;
-            END;
+            END
         END;
     END TRY
 
@@ -100,3 +100,4 @@ BEGIN
 
     SET NOCOUNT OFF;
 END
+GO

@@ -64,7 +64,21 @@ BEGIN
     BEGIN TRY
         INSERT INTO [dbo].[empleado] ([idPuesto], [valorDocumento], [nombre], [fechaContratacion], [saldoVacaciones], [esActivo])
         VALUES (@idPuesto, @valorDocumento, @nombre, @fechaContratacion, @saldoVacaciones, @esActivo);
-        
+        INSERT INTO [dbo].[bitacoraEvento] 
+                ([idTipoEvento],
+                [descripcion],
+                [idPostByUser], 
+                [postInIp], 
+                [postTime])
+
+                VALUES (6, 
+                    'Doc: ' + @valorDocumento + 
+                    ' Nombre: ' + @nombre + 
+                    ' Puesto: ' + (SELECT nombre FROM puesto WHERE id = @idPuesto), 
+                    @idPostByUser, 
+                    @inIp, 
+                    GETDATE()
+                );
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
@@ -77,7 +91,7 @@ BEGIN
         DECLARE @error_procedure NVARCHAR(128) = ERROR_PROCEDURE();
         DECLARE @current_datetime DATETIME = GETDATE();
 
-        INSERT INTO [dbo].[dbError] ([idPostByUser], [number], [state], [severity], [line], [procedi], [message], [datetime])
+        INSERT INTO [dbo].[DBErrors] ([UserName], [ErrorNumber], [ErrorState], [ErrorSeverity], [ErrorLine], [ErrorProcedure], [ErrorMessage], [ErrorDateTime])
         VALUES (NULL, @error_number, @error_state, @error_severity, @error_line, @error_procedure, @error_message, @current_datetime);
 
         IF @rollback = 1
@@ -128,6 +142,7 @@ BEGIN
     FROM empleado
     WHERE CAST(valorDocumento AS VARCHAR(20)) LIKE '%' + CAST(@valorDocumento AS VARCHAR(20)) + '%'
     ORDER BY nombre ASC;
+
 END
 GO
 
@@ -144,14 +159,15 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE GetMovimientosById
-    @valorDocumento INT
+ALTER PROCEDURE GetMovimientosById
+    @valorDocumento VARCHAR(64)
 AS
 BEGIN
     SET NOCOUNT ON;
     SELECT idEmpleado, idTipoMovimiento, fecha, monto, nuevoSaldo, idPostByUser, postInIp, postTime 
     FROM movimiento
-    WHERE idEmpleado = @valorDocumento
+    WHERE idEmpleado = (SELECT id FROM empleado WHERE valorDocumento = @valorDocumento)
+    ORDER BY fecha DESC;
 END
 GO
 
@@ -203,19 +219,23 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE ElimiEmpleado
-    @valorDocumento VARCHAR(64)
+
+
+ALTER PROCEDURE ElimiEmpleado
+    @valorDocumento VARCHAR(64),
+    @idPostByUser INT,
+    @inIp VARCHAR(64)
 AS
 BEGIN
     DECLARE @rollback BIT = 0;
     BEGIN TRANSACTION;
     BEGIN TRY
-        IF EXISTS (SELECT 1 FROM [dbo].[empleado] WHERE [valorDocumento] = @valorDocumento)
+
         BEGIN
             DELETE FROM [dbo].[empleado]
             WHERE [valorDocumento] = @valorDocumento;
         END
-        COMMIT TRANSACTION;
+    COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
         SET @rollback = 1;
@@ -227,13 +247,12 @@ BEGIN
         DECLARE @error_procedure NVARCHAR(128) = ERROR_PROCEDURE();
         DECLARE @current_datetime DATETIME = GETDATE();
 
-        INSERT INTO [dbo].[dbError] ([idPostByUser], [number], [state], [severity], [line], [procedi], [message], [datetime])
+        INSERT INTO [dbo].[DBErrors] ([UserName], [ErrorNumber], [ErrorState], [ErrorSeverity], [ErrorLine], [ErrorProcedure], [ErrorMessage], [ErrorDateTime])
         VALUES (NULL, @error_number, @error_state, @error_severity, @error_line, @error_procedure, @error_message, @current_datetime);
 
         IF @rollback = 1
             ROLLBACK TRANSACTION;
     END CATCH
-
     IF @rollback = 0
         COMMIT TRANSACTION;
 END

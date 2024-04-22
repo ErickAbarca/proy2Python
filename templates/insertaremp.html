@@ -60,6 +60,7 @@
 
             var formData = $(this).serialize();
             formData += '&idPostByUser=' + username;
+            console.log(formData);
 
             $.post('/insertaremp', formData, function(response) {
                 $('#mensaje').text(response.message);

@@ -107,22 +107,34 @@
         font-size: 16px;
         }
 
-.modificarOpcion {
-    background-color: #4CAF50; 
-    color: white;
-    border: none;
-}
+        .modificarOpcion {
+            background-color: #4CAF50; 
+            color: white;
+            border: none;
+        }
 
-.eliminarOpcion {
-    background-color: #f44336; 
-    color: white;
-    border: none;
-}
-.innerTitle {
-    color: #ffffff;
-    font-size: 24px;
-    justify-content: center;
-}
+        .eliminarOpcion {
+            background-color: #f44336; 
+            color: white;
+            border: none;
+        }
+        .innerTitle {
+            color: #ffffff;
+            font-size: 24px;
+            justify-content: center;
+        }
+        #confirmacion {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
 
     </style>
 </head>
@@ -187,10 +199,15 @@
         </div>
         <br>
         <button class="boton modificarOpcion", id="modificar">Modificar</button>
-        <button class="boton eliminarOpcion", id="eliminar">Eliminar</button>
+        <button class="boton eliminarOpcion", id="eliminar", onclick="document.getElementById('confirmacion').style.display='flex';">Eliminar</button>
         <button class="boton", id="insMovimiento">Insertar Movimiento</button>
         <button id="movimientos", class="boton">Ver Movimientos</button>
         <button class="boton" onclick="document.querySelector('.opcionesDiv').style.display = 'none';">Cerrar</button>
+        <div id="confirmacion">
+            <h1>¿Seguro que desea eliminar al empleado?</h1>
+            <button class="boton", id="confirmar">Confirmar</button>
+            <button class="boton", id="cancelar" onclick="document.getElementById('confirmacion').style.display = 'none';" >Cancelar</button>
+        </div>
     </div>
 
 <script>
@@ -254,7 +271,7 @@
             fila.appendChild(documentoCelda);
 
             const fechaCelda = document.createElement('td');
-            fechaCelda.textContent = new Date(empleado.fechaContratacion).toLocaleDateString();
+            fechaCelda.textContent = new Date(empleado.fechaContratacion).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
             fila.appendChild(fechaCelda);
 
             const puestoCelda = document.createElement('td');
@@ -309,13 +326,32 @@
     document.getElementById('modificar').addEventListener('click', function() {
         const seleccion = document.getElementById('seleccion');
         const documento = seleccion.querySelector('td:nth-child(2)').textContent;
-        console.log(documento);
         window.location.href = `/modificaremp?documento=${documento}&username=${username}`;
     });
+
+    document.getElementById('confirmar').addEventListener('click', function() {
+        const seleccion = document.getElementById('seleccion');
+        const documento = seleccion.querySelector('td:nth-child(2)').textContent;
+        const url = `http://127.0.0.1:5000/eliminaremp?documento=${documento}&username=${username}`;
+        fetch(url, {
+            method: 'POST'
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener el archivo JSON');
+            }
+            window.location.reload();
+            return response.json();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+    });
+
     document.getElementById('movimientos').addEventListener('click', function() {
         const seleccion = document.getElementById('seleccion');
         const documento = seleccion.querySelector('td:nth-child(2)').textContent;
-        window.location.href = `/movimientos?documento=${documento}&username=${username}`;
+        window.location.href = `/movimientoemp?documento=${documento}&username=${username}`;
     });
 
   </script>  
