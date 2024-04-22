@@ -212,9 +212,10 @@ def ver_movimientos_empleado():
             movimientos_json = []
             for m in movimientos_empleado:
                 movimiento_json = {
-                    'idEmpleado': m[0],
-                    'fecha': m[1],
-                    'tipo': m[2],
+                    'idEmpleado': ejecutar_stored_procedure('GetEmpleadoById', f"'{m[0]}'")[0][1],
+                    'idTipo': m[1],
+                    'tipo': ejecutar_stored_procedure('GetTipoMovimientoById', f"{m[1]}")[0][0],
+                    'fecha': m[2],
                     'monto': m[3],
                     'nuevoSaldo': m[4],
                     'idPostbyUser': m[5],
@@ -223,8 +224,9 @@ def ver_movimientos_empleado():
                 }
                 print(movimiento_json)
                 movimientos_json.append(movimiento_json)
-            print(movimientos_json)
-            return render_template('movimientos.html', movimientos=movimientos_json)
+            empleado = ejecutar_stored_procedure('GetFiltroEmpleadosDoc', f"'{valorDocumento}'")
+            print({'nombre': empleado[0][2]}, {'saldoVacaciones': empleado[0][5]})
+            return jsonify(movimientos_json)
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 

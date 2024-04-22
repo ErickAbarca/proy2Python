@@ -168,6 +168,29 @@ BEGIN
     FROM movimiento
     WHERE idEmpleado = (SELECT id FROM empleado WHERE valorDocumento = @valorDocumento)
     ORDER BY fecha DESC;
+    SET NOCOUNT OFF;
+END
+GO
+
+CREATE PROCEDURE GetEmpleadoById
+    @id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT idPuesto, valorDocumento, nombre, fechaContratacion, esActivo, saldoVacaciones, id
+    FROM empleado
+    WHERE id = @id;
+    SET NOCOUNT OFF;
+END
+GO
+
+ALTER PROCEDURE GetTipoMovimientoById
+    @id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT nombre, tipoAccion FROM tipoMovimiento WHERE id = @id;
+    SET NOCOUNT OFF;
 END
 GO
 
