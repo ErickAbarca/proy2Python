@@ -89,16 +89,16 @@
             cursor: pointer;
         }
         .opcionesDiv {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(5px);
-        display: none;
-        justify-content: center;
-        align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
         }
 
         .opcionesDiv button {
@@ -353,6 +353,13 @@
         const documento = seleccion.querySelector('td:nth-child(2)').textContent;
         window.location.href = `/movimientoemp?documento=${documento}&username=${username}`;
     });
+
+    document.getElementById('insMovimiento').addEventListener('click', function() {
+        const seleccion = document.getElementById('seleccion');
+        const documento = seleccion.querySelector('td:nth-child(2)').textContent;
+        window.location.href = `/insertmovimiento?documento=${documento}&username=${username}`;
+    });
+
 
   </script>  
 

@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_cors import CORS
 import pyodbc
+import datetime
 
 app = Flask(__name__)
 CORS(app) 
@@ -59,6 +60,20 @@ def obtener_puestos():
         puestos_json.append(puesto_json)
     
     return jsonify(puestos_json)
+
+@app.route('/GetTipoMovimientos', methods=['GET'])
+def obtener_tipos_movimiento():
+    tipos_movimiento = ejecutar_stored_procedure('GetTipoMovimientos')
+    tipos_movimiento_json = []
+    
+    for tm in tipos_movimiento:
+        tipo_movimiento_json = {
+            'id': tm[0],
+            'nombre': tm[1],
+        }
+        tipos_movimiento_json.append(tipo_movimiento_json)
+    
+    return jsonify(tipos_movimiento_json)
 
 
 @app.route('/validar', methods=['GET'])
@@ -122,6 +137,7 @@ def abrir_modificar_empleado():
 def modificar_empleado():
     if request.method == 'POST':
         try:
+            print(request.form)
             # Obtener los datos del formulario
             valorDocumento = request.form['valorDocumento']
             idPuesto = request.form['idPuesto']
@@ -133,11 +149,11 @@ def modificar_empleado():
             idPostByUser = ejecutar_stored_procedure('ObtenerIdPorNombre', f"'{username}'")[0][0]
             inIp = request.remote_addr
             parametros = f"{idPuesto}, '{valorDocumento}', '{nombre}', '{fechaContratacion}', {saldoVacaciones}, {esActivo}, {idPostByUser}, '{inIp}'"
-            print(parametros)
             ejecutar_stored_procedure("ModificarEmpleado", parametros) 
             return jsonify({'message': 'Datos modificados correctamente'})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+        
         
 @app.route('/eliminaremp', methods=['POST'])
 def eliminar_empleado():
@@ -151,9 +167,6 @@ def eliminar_empleado():
         return jsonify({'message': 'Empleado eliminado correctamente'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
-
 
 
 @app.route('/empleados', methods=['GET'])
@@ -222,11 +235,48 @@ def ver_movimientos_empleado():
                     'postInIp': m[6],
                     'postTime': m[7]
                 }
-                print(movimiento_json)
                 movimientos_json.append(movimiento_json)
             empleado = ejecutar_stored_procedure('GetFiltroEmpleadosDoc', f"'{valorDocumento}'")
-            print({'nombre': empleado[0][2]}, {'saldoVacaciones': empleado[0][5]})
             return jsonify(movimientos_json)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+
+@app.route('/insertmovimiento', methods=['GET'])
+def abrir_insertar_movimiento_empleado():
+    username = request.args.get('username')
+    documento = request.args.get('documento')
+    return render_template('insertarMovimiento.html', username=username, documento=documento)
+
+
+@app.route('/insertarmovimiento', methods=['POST'])
+def insertar_movimiento():
+    if request.method == 'POST':
+        try:
+            valorDocumento = request.form['valorDocumento']
+            idMovimiento = request.form['idMovimiento']
+            monto = request.form['monto']
+            saldo = request.form['saldoVacaciones']
+            idPostByUser = request.form['idPostByUser']
+            postInIp = request.remote_addr
+            idEmpleado = ejecutar_stored_procedure('GetFiltroEmpleadosDoc', f"'{valorDocumento}'")[0][6]
+            user = ejecutar_stored_procedure('ObtenerIdPorNombre', f"'{idPostByUser}'")[0][0]
+            idEmpleado = int(idEmpleado)
+
+            tipoMovimientos = ejecutar_stored_procedure('GetTipoMovimientoById', idMovimiento)[0][1]
+            if tipoMovimientos == 'C':
+                saldo = int(saldo) + int(monto)
+            else:
+                saldo = int(saldo) - int(monto)
+
+            fechaHora = datetime.datetime.now()
+
+            fechaHora = fechaHora.isoformat(timespec='milliseconds')
+            fechaHora = fechaHora.replace('T', ' ')
+            fecha = datetime.datetime.now().strftime('%Y-%m-%d')
+            parametros = f"{idEmpleado}, {idMovimiento}, '{fecha}', {monto}, {saldo}, {user}, '{postInIp}', '{fechaHora}'"
+            ejecutar_stored_procedure("InsertarMovimiento", parametros)
+            return jsonify({'message': 'Movimiento ingresado correctamente'})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 

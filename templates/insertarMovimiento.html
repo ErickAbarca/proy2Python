@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insertar Movimiento</title>
+</head>
+<body>
+    <h2 id="usuario">Usuario {{username}}</h2>
+    <h2 id="informacion">Insertar movimiento al empleado de documento: {{documento}}</h2>
+    <form id="formulario-empleado" method="post", action="/modificaremp">
+
+        <label for="valorDocumento">Valor Documento Identidad: {{documento}}</label><br><br>
+        <label id="nombre">Nombre:</label><br><br>
+        <label for="saldoVacaciones" id="saldoVacaciones">Saldo Vacaciones: </label><br><br>
+
+
+        <label for="idMovimiento">Tipo de Movimiento:</label>
+        <select id="idMovimiento" name="idMovimiento"></select><br><br>
+
+        <label for="Monto">Monto</label>
+        <input type="number" id="Monto" name="monto"><br><br>
+        
+        <button type="submit">Enviar</button>
+    </form>
+    <div id="mensaje"></div>
+    <a href="/pagina_principal/{{username}}", class="boton">Regresar</a>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+
+    const selectMovimiento = document.getElementById('idMovimiento');
+    function cargarMovimientos() {
+    fetch('/GetTipoMovimientos')
+        .then(response => response.json())
+        .then(data => {
+            selectMovimiento.innerHTML = '';
+            data.forEach(movimiento => {
+                const option = document.createElement('option');
+                option.value = movimiento.id;
+                option.textContent = movimiento.nombre;
+                selectMovimiento.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error al obtener Movimientos:', error));
+    }
+
+    function obtenerDatos(datos) {
+        document.getElementById('nombre').textContent = 'Nombre: '+datos[0].nombre;
+        document.getElementById('saldoVacaciones').textContent = 'Saldo Vacaciones actual: '+datos[0].saldoVacaciones;
+    }  
+
+    function busquedaFunc() {
+    const busqueda = document.getElementById('informacion').textContent.split(' ')[6];
+    const urlBusqueda = `http://127.0.0.1:5000/empleados/filtro?search=${busqueda}`;
+    console.log(urlBusqueda);
+    fetch(urlBusqueda)
+        .then(response => response.json())
+        .then(data => {
+            obtenerDatos(data);
+        })
+        .catch(error => {
+            console.error('Error al obtener datos:', error);
+            return null;
+        });
+}   
+    cargarMovimientos();
+    busquedaFunc();
+
+
+
+
+    const formulario = document.getElementById('formulario-empleado');
+    const username= document.getElementById('usuario').textContent.split(' ')[1];
+    const documento= document.getElementById('informacion').textContent.split(' ')[6];
+    const saldoVacaciones= document.getElementById('saldoVacaciones').textContent.split(' ')[3];
+    $(document).ready(function() {
+        $('#formulario-empleado').submit(function(event) {
+            event.preventDefault();
+
+            var formData = $(this).serialize();
+            formData += '&idPostByUser=' + username;
+
+            formData += '&valorDocumento=' + document.getElementById('informacion').textContent.split(' ')[6];
+            formData += '&saldoVacaciones=' + document.getElementById('saldoVacaciones').textContent.split(' ')[3];
+            console.log(formData);
+                        
+            $.post('/insertarmovimiento', formData, function(response) {
+                $('#mensaje').text(response.message);
+            }).fail(function(xhr, status, error) {
+                $('#mensaje').text('Error: ' + error);
+            });
+        });
+    });
+    
+
+</script>
+
+    
+</body>
+</html>

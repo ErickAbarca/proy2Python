@@ -1,4 +1,3 @@
---SP de prueba para obtener todos los usuarios y probar la coenxión
 ALTER PROCEDURE ObtenerUsuarios
 AS
 BEGIN
@@ -7,18 +6,7 @@ BEGIN
 END
 GO
 
-
-CREATE PROCEDURE ObtenerUsuarioPorId
-    @nombre_usuario VARCHAR(50),
-    @password VARCHAR(50)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT * FROM usuario WHERE id = @id;
-END
-GO
-
-CREATE PROCEDURE ObtenerIdPorNombre
+ALTER PROCEDURE ObtenerIdPorNombre
     @nombre_usuario VARCHAR(64)
 AS
 BEGIN
@@ -28,7 +16,7 @@ END
 GO
 
 
-CREATE PROCEDURE ValidarCredenciales
+ALTER PROCEDURE ValidarCredenciales
     @username VARCHAR(64),
     @password VARCHAR(64)
 AS
@@ -64,35 +52,20 @@ BEGIN
     BEGIN TRY
         INSERT INTO [dbo].[empleado] ([idPuesto], [valorDocumento], [nombre], [fechaContratacion], [saldoVacaciones], [esActivo])
         VALUES (@idPuesto, @valorDocumento, @nombre, @fechaContratacion, @saldoVacaciones, @esActivo);
-        INSERT INTO [dbo].[bitacoraEvento] 
-                ([idTipoEvento],
-                [descripcion],
-                [idPostByUser], 
-                [postInIp], 
-                [postTime])
-
-                VALUES (6, 
-                    'Doc: ' + @valorDocumento + 
-                    ' Nombre: ' + @nombre + 
-                    ' Puesto: ' + (SELECT nombre FROM puesto WHERE id = @idPuesto), 
-                    @idPostByUser, 
-                    @inIp, 
-                    GETDATE()
-                );
+        
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
-        SET @rollback = 1;
-        DECLARE @error_message NVARCHAR(2048) = ERROR_MESSAGE();
-        DECLARE @error_number INT = ERROR_NUMBER();
-        DECLARE @error_state INT = ERROR_STATE();
-        DECLARE @error_severity INT = ERROR_SEVERITY();
-        DECLARE @error_line INT = ERROR_LINE();
-        DECLARE @error_procedure NVARCHAR(128) = ERROR_PROCEDURE();
-        DECLARE @current_datetime DATETIME = GETDATE();
-
-        INSERT INTO [dbo].[DBErrors] ([UserName], [ErrorNumber], [ErrorState], [ErrorSeverity], [ErrorLine], [ErrorProcedure], [ErrorMessage], [ErrorDateTime])
-        VALUES (NULL, @error_number, @error_state, @error_severity, @error_line, @error_procedure, @error_message, @current_datetime);
+        INSERT INTO dbo.DBErrors	VALUES (
+			SUSER_SNAME(),
+			ERROR_NUMBER(),
+			ERROR_STATE(),
+			ERROR_SEVERITY(),
+			ERROR_LINE(),
+			ERROR_PROCEDURE(),
+			ERROR_MESSAGE(),
+			GETDATE()
+		);
 
         IF @rollback = 1
             ROLLBACK TRANSACTION;
@@ -102,7 +75,6 @@ BEGIN
         COMMIT TRANSACTION;
 END
 GO
-
 
 
 ALTER PROCEDURE GetEmpleados
@@ -116,16 +88,16 @@ END
 GO
 
 
-CREATE PROCEDURE GetPuestoId
+ALTER PROCEDURE GetPuestoId
     @id INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT * FROM puesto WHERE id = @id;
+    SELECT id, nombre, salarioHora FROM puesto WHERE id = @id;
 END
 GO
 
-CREATE PROCEDURE GetPuestos
+ALTER PROCEDURE GetPuestos
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -172,7 +144,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE GetEmpleadoById
+ALTER PROCEDURE GetEmpleadoById
     @id INT
 AS
 BEGIN
@@ -194,7 +166,16 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE ModificarEmpleado
+CREATE PROCEDURE GetTipoMovimientos
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id, nombre, tipoAccion FROM tipoMovimiento;
+    SET NOCOUNT OFF;
+END
+GO
+
+ALTER PROCEDURE ModificarEmpleado
     @idPuesto INT,
     @valorDocumento VARCHAR(64),
     @nombre VARCHAR(64),
@@ -221,17 +202,16 @@ BEGIN
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
-        SET @rollback = 1;
-        DECLARE @error_message NVARCHAR(2048) = ERROR_MESSAGE();
-        DECLARE @error_number INT = ERROR_NUMBER();
-        DECLARE @error_state INT = ERROR_STATE();
-        DECLARE @error_severity INT = ERROR_SEVERITY();
-        DECLARE @error_line INT = ERROR_LINE();
-        DECLARE @error_procedure NVARCHAR(128) = ERROR_PROCEDURE();
-        DECLARE @current_datetime DATETIME = GETDATE();
-
-        INSERT INTO [dbo].[dbError] ([idPostByUser], [number], [state], [severity], [line], [procedi], [message], [datetime])
-        VALUES (NULL, @error_number, @error_state, @error_severity, @error_line, @error_procedure, @error_message, @current_datetime);
+       INSERT INTO dbo.DBErrors	VALUES (
+			SUSER_SNAME(),
+			ERROR_NUMBER(),
+			ERROR_STATE(),
+			ERROR_SEVERITY(),
+			ERROR_LINE(),
+			ERROR_PROCEDURE(),
+			ERROR_MESSAGE(),
+			GETDATE()
+		);
 
         IF @rollback = 1
             ROLLBACK TRANSACTION;
@@ -261,21 +241,63 @@ BEGIN
     COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
-        SET @rollback = 1;
-        DECLARE @error_message NVARCHAR(2048) = ERROR_MESSAGE();
-        DECLARE @error_number INT = ERROR_NUMBER();
-        DECLARE @error_state INT = ERROR_STATE();
-        DECLARE @error_severity INT = ERROR_SEVERITY();
-        DECLARE @error_line INT = ERROR_LINE();
-        DECLARE @error_procedure NVARCHAR(128) = ERROR_PROCEDURE();
-        DECLARE @current_datetime DATETIME = GETDATE();
+        INSERT INTO dbo.DBErrors	VALUES (
+			SUSER_SNAME(),
+			ERROR_NUMBER(),
+			ERROR_STATE(),
+			ERROR_SEVERITY(),
+			ERROR_LINE(),
+			ERROR_PROCEDURE(),
+			ERROR_MESSAGE(),
+			GETDATE()
+		);
+        IF @rollback = 1
+            ROLLBACK TRANSACTION;
+    END CATCH
+    IF @rollback = 0
+        COMMIT TRANSACTION;
+END
+GO
 
-        INSERT INTO [dbo].[DBErrors] ([UserName], [ErrorNumber], [ErrorState], [ErrorSeverity], [ErrorLine], [ErrorProcedure], [ErrorMessage], [ErrorDateTime])
-        VALUES (NULL, @error_number, @error_state, @error_severity, @error_line, @error_procedure, @error_message, @current_datetime);
+
+CREATE PROCEDURE InsertarMovimiento
+    @idEmpleado INT,
+    @idTipoMovimiento INT,
+    @fecha DATE,
+    @monto INT,
+    @nuevoSaldo INT,
+    @idPostByUser INT,
+    @postInIp VARCHAR(64),
+    @postTime DATETIME
+
+AS
+BEGIN
+    DECLARE @rollback BIT = 0;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        INSERT INTO [dbo].[movimiento] ([idEmpleado], [idTipoMovimiento], [fecha], [monto], [nuevoSaldo], [idPostByUser], [postInIp], [postTime])
+        VALUES (@idEmpleado, @idTipoMovimiento, @fecha, @monto, @nuevoSaldo, @idPostByUser, @postInIp, @postTime);
+        UPDATE [dbo].[empleado]
+            SET [saldoVacaciones] = @nuevoSaldo
+        WHERE [id] = @idEmpleado;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        INSERT INTO dbo.DBErrors	VALUES (
+			SUSER_SNAME(),
+			ERROR_NUMBER(),
+			ERROR_STATE(),
+			ERROR_SEVERITY(),
+			ERROR_LINE(),
+			ERROR_PROCEDURE(),
+			ERROR_MESSAGE(),
+			GETDATE()
+		);
 
         IF @rollback = 1
             ROLLBACK TRANSACTION;
     END CATCH
+
     IF @rollback = 0
         COMMIT TRANSACTION;
 END
