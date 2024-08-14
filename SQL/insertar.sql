@@ -9,7 +9,7 @@ ALTER PROCEDURE InsertarEmpleado
     @inIp VARCHAR(64),
 
     @outResultCode INT OUTPUT
-    
+    adsflkjlaskd
 AS
 BEGIN
     SET NOCOUNT ON;

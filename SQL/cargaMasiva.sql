@@ -10,7 +10,7 @@ BEGIN
             puesto.value('@Nombre', 'varchar(64)') AS nombre,
             puesto.value('@SalarioxHora', 'money') AS salarioHora
         FROM @DatosXML.nodes('/Datos/Puestos/Puesto') AS Tbl(puesto);
-
+jlfjadslk
         INSERT INTO tipoEvento (id, nombre)
         SELECT
             tipoEvento.value('@Id', 'int') AS id,
