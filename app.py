@@ -16,7 +16,7 @@ def ejecutar_stored_procedure(nombre_sp, parametros=None):
 
     conn = pyodbc.connect(conn_str)
     cursor = conn.cursor()
-
+jfasldkjds
     try:
         if parametros:
             cursor.execute(f"EXEC {nombre_sp} {parametros}")
