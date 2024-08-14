@@ -25,7 +25,6 @@ def ejecutar_stored_procedure(nombre_sp, parametros=None):
 
         if cursor.description:
             resultados = cursor.fetchall()
-            return resultados
         else:
             return None
     finally:
